@@ -45,7 +45,7 @@ uniquify
 set_app_var compile_ultra_ungroup_dw false
 set_ungroup [get_designs *] false
 
-set_units -time ps -resistance kOhm -capacitance fF -voltage V -current mA
+set_units -time ps -resistance kOhm -capacitance pF -voltage V -current mA
 create_clock [get_ports $CLK_PORT] -name sys_clk -period $CLK_PERIOD -waveform [list 0 [expr {$CLK_PERIOD / 2}]]
 
 if {[sizeof_collection [get_ports -quiet $RESET_PORT]] > 0} {
