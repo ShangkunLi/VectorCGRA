@@ -93,6 +93,10 @@ reports/dc_timing.rpt         DC timing report
 reports/dc_power.rpt          DC power report
 summaryReport/post_route.sum  Innovus post-route summary
 amoeba_DETAILS.rpt            compact Innovus PPA table by stage
+reports/innovus_area_breakdown.csv
+                              top-level post-route physical area breakdown
+reports/innovus_tile_area_breakdown.csv
+                              tile-internal post-route physical area breakdown
 def/amoeba.def                routed DEF
 enc/amoeba.enc                final Innovus database
 ```
@@ -177,3 +181,45 @@ and update:
 ```tcl
 set SITE "unit"
 ```
+
+## Area Breakdown
+
+After `./scripts/run_innovus.sh`, the flow writes two CSV files from the final
+Innovus database:
+
+```text
+reports/innovus_area_breakdown.csv
+reports/innovus_tile_area_breakdown.csv
+```
+
+`innovus_area_breakdown.csv` is the top-level physical breakdown:
+
+```text
+Tiles (x64)
+Core Controllers (x16)
+Loop Controllers (x16)
+Inter-Core NoC
+Other
+Total
+```
+
+The current RTL does not instantiate real SPM/SRAM macros. Any placeholder data
+memory/interface logic is folded into `Other`; do not report it as SPM area.
+
+`innovus_tile_area_breakdown.csv` is the tile-internal physical breakdown:
+
+```text
+DCUs
+Other FUs
+Register File
+Crossbar
+Configuration Memories
+Other Tile Logic
+Tiles (x64)
+```
+
+If a category is zero, inspect the preserved instance names in Innovus and
+adjust the matching patterns in `scripts/report_utils.tcl`.
+
+For paper figures, describe this as a post-route logic-area breakdown. Add SPM
+macro area only after the RTL flow instantiates actual memory macros.

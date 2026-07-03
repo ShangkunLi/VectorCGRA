@@ -111,6 +111,8 @@ verify_connectivity -error 0 -geom_connect -no_antenna
 verify_drc -limit 0
 
 summaryReport -noHtml -outfile ${rptDir}/post_route.sum
+write_area_breakdown_csv reports/innovus_area_breakdown.csv
+write_tile_area_breakdown_csv reports/innovus_tile_area_breakdown.csv
 defOut -netlist -floorplan -routing ${defDir}/${DESIGN}.def
 saveNetlist -removePowerGround ${defDir}/${TOP_MODULE}_post_route.v
 saveDesign ${encDir}/${DESIGN}.enc
