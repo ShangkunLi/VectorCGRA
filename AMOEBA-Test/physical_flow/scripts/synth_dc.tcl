@@ -50,11 +50,13 @@ create_clock [get_ports $CLK_PORT] -name sys_clk -period $CLK_PERIOD -waveform [
 
 if {[sizeof_collection [get_ports -quiet $RESET_PORT]] > 0} {
     set_false_path -from [get_ports $RESET_PORT]
-    set_dont_touch_network [get_ports $RESET_PORT]
 }
-set_dont_touch_network [get_ports $CLK_PORT]
 
-compile -map_effort medium -area_effort medium
+# Do not mark the clock/reset fanout as dont-touch before compile. On this
+# generated RTL it can protect hundreds of thousands of cells/nets and make
+# DC compile extremely slow. Innovus will build the real clock tree later.
+
+compile_ultra -no_autoungroup
 
 change_names -rules verilog -hierarchy
 
