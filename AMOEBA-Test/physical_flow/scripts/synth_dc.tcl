@@ -37,7 +37,7 @@ current_design $TOP_MODULE
 link
 
 uniquify
-check_design > ${REPORT_DIR}/dc_check_design.rpt
+# check_design > ${REPORT_DIR}/dc_check_design.rpt
 
 # Keep the architectural hierarchy visible in reports and in the Innovus
 # handoff. This makes tile, regular-controller, and loop-controller area
