@@ -54,7 +54,7 @@ if {[sizeof_collection [get_ports -quiet $RESET_PORT]] > 0} {
 }
 set_dont_touch_network [get_ports $CLK_PORT]
 
-compile_ultra -no_autoungroup
+compile -map_effort medium -area_effort medium
 
 change_names -rules verilog -hierarchy
 
