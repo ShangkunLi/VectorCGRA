@@ -5577,6 +5577,89 @@ module RingNetworkRTL__07b9d0fed34cf9fa
 endmodule
 
 
+// PyMTL Component SpmBankPhysicalStubRTL Definition
+// Full name: SpmBankPhysicalStubRTL__DataType_CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1__MemReadType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__MemWriteType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__MemResponseType_MemAccessPacket_5_4_8192__f5d02816a736dbde__global_data_mem_size_8192__per_bank_data_mem_size_128__is_combinational_False
+// At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py
+
+module SpmBankPhysicalStubRTL__3f15d2341fbd9ca9
+(
+  input  logic [0:0] clk ,
+  input  logic [0:0] reset ,
+  input MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv_rd__msg  ,
+  output logic [0:0] recv_rd__rdy  ,
+  input logic [0:0] recv_rd__val  ,
+  input MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv_wr__msg  ,
+  output logic [0:0] recv_wr__rdy  ,
+  input logic [0:0] recv_wr__val  ,
+  output MemAccessPacket_5_4_8192__f5d02816a736dbde send__msg  ,
+  input logic [0:0] send__rdy  ,
+  output logic [0:0] send__val  
+);
+
+  // PyMTL Update Block Source
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:212
+  // @update
+  // def respond_to_read_and_drop_write():
+  //     s.recv_rd.rdy @= s.send.rdy
+  //     s.recv_wr.rdy @= 1
+  //     s.send.val @= s.recv_rd.val
+  //     s.send.msg @= MemResponseType(
+  //         0, 0, 0, DataType(0, 0, 0, 0), 0, 0, 0
+  //     )
+  // 
+  //     if s.recv_rd.val:
+  //         s.send.msg.src @= s.recv_rd.msg.dst
+  //         s.send.msg.dst @= s.recv_rd.msg.src
+  //         s.send.msg.addr @= s.recv_rd.msg.addr
+  //         s.send.msg.data @= DataType(0, 0, 0, 0)
+  //         s.send.msg.src_cgra @= s.recv_rd.msg.src_cgra
+  //         s.send.msg.src_tile @= s.recv_rd.msg.src_tile
+  //         s.send.msg.remote_src_port @= s.recv_rd.msg.remote_src_port
+  
+  always_comb begin : respond_to_read_and_drop_write
+    recv_rd__rdy = send__rdy;
+    recv_wr__rdy = 1'd1;
+    send__val = recv_rd__val;
+    send__msg = { 3'd0, 2'd0, 13'd0, { 32'd0, 1'd0, 1'd0, 1'd0 }, 4'd0, 3'd0, 2'd0 };
+    if ( recv_rd__val ) begin
+      send__msg.src = recv_rd__msg.dst;
+      send__msg.dst = recv_rd__msg.src;
+      send__msg.addr = recv_rd__msg.addr;
+      send__msg.data = { 32'd0, 1'd0, 1'd0, 1'd0 };
+      send__msg.src_cgra = recv_rd__msg.src_cgra;
+      send__msg.src_tile = recv_rd__msg.src_tile;
+      send__msg.remote_src_port = recv_rd__msg.remote_src_port;
+    end
+  end
+
+endmodule
+
+
+// PyMTL Component Mux Definition
+// At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/arithmetics.py
+
+module Mux__Type_MemAccessPacket_4_5_8192__68f92223fbe0cb00__ninputs_2
+(
+  input  logic [0:0] clk ,
+  input  MemAccessPacket_4_5_8192__68f92223fbe0cb00 in_ [0:1],
+  output MemAccessPacket_4_5_8192__68f92223fbe0cb00 out ,
+  input  logic [0:0] reset ,
+  input  logic [0:0] sel 
+);
+
+  // PyMTL Update Block Source
+  // At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/arithmetics.py:13
+  // @update
+  // def up_mux():
+  //   s.out @= s.in_[ s.sel ]
+  
+  always_comb begin : up_mux
+    out = in_[sel];
+  end
+
+endmodule
+
+
 // PyMTL Component RegisterFile Definition
 // Full name: RegisterFile__Type_MemAccessPacket_4_5_8192__68f92223fbe0cb00__nregs_2__rd_ports_1__wr_ports_1__const_zero_False
 // At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/register_files.py
@@ -5620,491 +5703,6 @@ module RegisterFile__51564aab883b3c94
       if ( wen[1'(i)] ) begin
         regs[waddr[1'(i)]] <= wdata[1'(i)];
       end
-  end
-
-endmodule
-
-
-// PyMTL Component NormalQueueDpathRTL Definition
-// Full name: NormalQueueDpathRTL__EntryType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__num_entries_2
-// At /home/lucas/Project/VectorCGRA/lib/basic/val_rdy/queues.py
-
-module NormalQueueDpathRTL__1a4c7eb51844e2bc
-(
-  input  logic [0:0] clk ,
-  input  logic [0:0] raddr ,
-  input  MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv_msg ,
-  input  logic [0:0] reset ,
-  output MemAccessPacket_4_5_8192__68f92223fbe0cb00 send_msg ,
-  input  logic [0:0] waddr ,
-  input  logic [0:0] wen 
-);
-  //-------------------------------------------------------------
-  // Component rf
-  //-------------------------------------------------------------
-
-  logic [0:0] rf__clk;
-  logic [0:0] rf__raddr [0:0];
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 rf__rdata [0:0];
-  logic [0:0] rf__reset;
-  logic [0:0] rf__waddr [0:0];
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 rf__wdata [0:0];
-  logic [0:0] rf__wen [0:0];
-
-  RegisterFile__51564aab883b3c94 rf
-  (
-    .clk( rf__clk ),
-    .raddr( rf__raddr ),
-    .rdata( rf__rdata ),
-    .reset( rf__reset ),
-    .waddr( rf__waddr ),
-    .wdata( rf__wdata ),
-    .wen( rf__wen )
-  );
-
-  //-------------------------------------------------------------
-  // End of component rf
-  //-------------------------------------------------------------
-
-  assign rf__clk = clk;
-  assign rf__reset = reset;
-  assign rf__raddr[0] = raddr;
-  assign send_msg = rf__rdata[0];
-  assign rf__wen[0] = wen;
-  assign rf__waddr[0] = waddr;
-  assign rf__wdata[0] = recv_msg;
-
-endmodule
-
-
-// PyMTL Component NormalQueueRTL Definition
-// Full name: NormalQueueRTL__EntryType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__num_entries_2
-// At /home/lucas/Project/VectorCGRA/lib/basic/val_rdy/queues.py
-
-module NormalQueueRTL__1a4c7eb51844e2bc
-(
-  input  logic [0:0] clk ,
-  output logic [1:0] count ,
-  input  logic [0:0] reset ,
-  input MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv__msg  ,
-  output logic [0:0] recv__rdy  ,
-  input logic [0:0] recv__val  ,
-  output MemAccessPacket_4_5_8192__68f92223fbe0cb00 send__msg  ,
-  input logic [0:0] send__rdy  ,
-  output logic [0:0] send__val  
-);
-  //-------------------------------------------------------------
-  // Component ctrl
-  //-------------------------------------------------------------
-
-  logic [0:0] ctrl__clk;
-  logic [1:0] ctrl__count;
-  logic [0:0] ctrl__raddr;
-  logic [0:0] ctrl__recv_rdy;
-  logic [0:0] ctrl__recv_val;
-  logic [0:0] ctrl__reset;
-  logic [0:0] ctrl__send_rdy;
-  logic [0:0] ctrl__send_val;
-  logic [0:0] ctrl__waddr;
-  logic [0:0] ctrl__wen;
-
-  NormalQueueCtrlRTL__num_entries_2 ctrl
-  (
-    .clk( ctrl__clk ),
-    .count( ctrl__count ),
-    .raddr( ctrl__raddr ),
-    .recv_rdy( ctrl__recv_rdy ),
-    .recv_val( ctrl__recv_val ),
-    .reset( ctrl__reset ),
-    .send_rdy( ctrl__send_rdy ),
-    .send_val( ctrl__send_val ),
-    .waddr( ctrl__waddr ),
-    .wen( ctrl__wen )
-  );
-
-  //-------------------------------------------------------------
-  // End of component ctrl
-  //-------------------------------------------------------------
-
-  //-------------------------------------------------------------
-  // Component dpath
-  //-------------------------------------------------------------
-
-  logic [0:0] dpath__clk;
-  logic [0:0] dpath__raddr;
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 dpath__recv_msg;
-  logic [0:0] dpath__reset;
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 dpath__send_msg;
-  logic [0:0] dpath__waddr;
-  logic [0:0] dpath__wen;
-
-  NormalQueueDpathRTL__1a4c7eb51844e2bc dpath
-  (
-    .clk( dpath__clk ),
-    .raddr( dpath__raddr ),
-    .recv_msg( dpath__recv_msg ),
-    .reset( dpath__reset ),
-    .send_msg( dpath__send_msg ),
-    .waddr( dpath__waddr ),
-    .wen( dpath__wen )
-  );
-
-  //-------------------------------------------------------------
-  // End of component dpath
-  //-------------------------------------------------------------
-
-  assign ctrl__clk = clk;
-  assign ctrl__reset = reset;
-  assign dpath__clk = clk;
-  assign dpath__reset = reset;
-  assign dpath__wen = ctrl__wen;
-  assign dpath__waddr = ctrl__waddr;
-  assign dpath__raddr = ctrl__raddr;
-  assign ctrl__recv_val = recv__val;
-  assign recv__rdy = ctrl__recv_rdy;
-  assign dpath__recv_msg = recv__msg;
-  assign send__val = ctrl__send_val;
-  assign ctrl__send_rdy = send__rdy;
-  assign send__msg = dpath__send_msg;
-  assign count = ctrl__count;
-
-endmodule
-
-
-// PyMTL Component ChannelRTL Definition
-// Full name: ChannelRTL__PacketType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__QueueType_NormalQueueRTL__latency_1
-// At /home/lucas/Project/VectorCGRA/noc/PyOCN/pymtl3_net/channel/ChannelRTL.py
-
-module ChannelRTL__7f7d2c3d5c6b698e
-(
-  input  logic [0:0] clk ,
-  input  logic [0:0] reset ,
-  input MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv__msg  ,
-  output logic [0:0] recv__rdy  ,
-  input logic [0:0] recv__val  ,
-  output MemAccessPacket_4_5_8192__68f92223fbe0cb00 send__msg  ,
-  input logic [0:0] send__rdy  ,
-  output logic [0:0] send__val  
-);
-  //-------------------------------------------------------------
-  // Component queues[0:0]
-  //-------------------------------------------------------------
-
-  logic [0:0] queues__clk [0:0];
-  logic [1:0] queues__count [0:0];
-  logic [0:0] queues__reset [0:0];
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 queues__recv__msg [0:0];
-  logic [0:0] queues__recv__rdy [0:0];
-  logic [0:0] queues__recv__val [0:0];
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 queues__send__msg [0:0];
-  logic [0:0] queues__send__rdy [0:0];
-  logic [0:0] queues__send__val [0:0];
-
-  NormalQueueRTL__1a4c7eb51844e2bc queues__0
-  (
-    .clk( queues__clk[0] ),
-    .count( queues__count[0] ),
-    .reset( queues__reset[0] ),
-    .recv__msg( queues__recv__msg[0] ),
-    .recv__rdy( queues__recv__rdy[0] ),
-    .recv__val( queues__recv__val[0] ),
-    .send__msg( queues__send__msg[0] ),
-    .send__rdy( queues__send__rdy[0] ),
-    .send__val( queues__send__val[0] )
-  );
-
-  //-------------------------------------------------------------
-  // End of component queues[0:0]
-  //-------------------------------------------------------------
-
-  assign queues__clk[0] = clk;
-  assign queues__reset[0] = reset;
-  assign queues__recv__msg[0] = recv__msg;
-  assign recv__rdy = queues__recv__rdy[0];
-  assign queues__recv__val[0] = recv__val;
-  assign send__msg = queues__send__msg[0];
-  assign queues__send__rdy[0] = send__rdy;
-  assign send__val = queues__send__val[0];
-
-endmodule
-
-
-// PyMTL Component RegisterFile Definition
-// Full name: RegisterFile__Type_CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1__nregs_128__rd_ports_1__wr_ports_1__const_zero_False
-// At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/register_files.py
-
-module RegisterFile__b0f0dcdef9531a03
-(
-  input  logic [0:0] clk ,
-  input  logic [6:0] raddr [0:0],
-  output CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 rdata [0:0],
-  input  logic [0:0] reset ,
-  input  logic [6:0] waddr [0:0],
-  input  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 wdata [0:0],
-  input  logic [0:0] wen [0:0]
-);
-  localparam logic [0:0] __const__rd_ports_at_up_rf_read  = 1'd1;
-  localparam logic [0:0] __const__wr_ports_at_up_rf_write  = 1'd1;
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 regs [0:127];
-
-  // PyMTL Update Block Source
-  // At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/register_files.py:20
-  // @update
-  // def up_rf_read():
-  //   for i in range( rd_ports ):
-  //     s.rdata[i] @= s.regs[ s.raddr[i] ]
-  
-  always_comb begin : up_rf_read
-    for ( int unsigned i = 1'd0; i < 1'( __const__rd_ports_at_up_rf_read ); i += 1'd1 )
-      rdata[1'(i)] = regs[raddr[1'(i)]];
-  end
-
-  // PyMTL Update Block Source
-  // At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/register_files.py:32
-  // @update_ff
-  // def up_rf_write():
-  //   for i in range( wr_ports ):
-  //     if s.wen[i]:
-  //       s.regs[ s.waddr[i] ] <<= s.wdata[i]
-  
-  always_ff @(posedge clk) begin : up_rf_write
-    for ( int unsigned i = 1'd0; i < 1'( __const__wr_ports_at_up_rf_write ); i += 1'd1 )
-      if ( wen[1'(i)] ) begin
-        regs[waddr[1'(i)]] <= wdata[1'(i)];
-      end
-  end
-
-endmodule
-
-
-// PyMTL Component DataMemWrapperRTL Definition
-// Full name: DataMemWrapperRTL__DataType_CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1__MemReadType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__MemWriteType_MemAccessPacket_4_5_8192__68f92223fbe0cb00__MemResponseType_MemAccessPacket_5_4_8192__f5d02816a736dbde__global_data_mem_size_8192__per_bank_data_mem_size_128__is_combinational_False
-// At /home/lucas/Project/VectorCGRA/mem/data/DataMemWrapperRTL.py
-
-module DataMemWrapperRTL__3f15d2341fbd9ca9
-(
-  input  logic [0:0] clk ,
-  input  logic [0:0] reset ,
-  input MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv_rd__msg  ,
-  output logic [0:0] recv_rd__rdy  ,
-  input logic [0:0] recv_rd__val  ,
-  input MemAccessPacket_4_5_8192__68f92223fbe0cb00 recv_wr__msg  ,
-  output logic [0:0] recv_wr__rdy  ,
-  input logic [0:0] recv_wr__val  ,
-  output MemAccessPacket_5_4_8192__f5d02816a736dbde send__msg  ,
-  input logic [0:0] send__rdy  ,
-  output logic [0:0] send__val  
-);
-  localparam logic [7:0] __const__per_bank_data_mem_size_at_request_memory  = 8'd128;
-  //-------------------------------------------------------------
-  // Component channel_rd
-  //-------------------------------------------------------------
-
-  logic [0:0] channel_rd__clk;
-  logic [0:0] channel_rd__reset;
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 channel_rd__recv__msg;
-  logic [0:0] channel_rd__recv__rdy;
-  logic [0:0] channel_rd__recv__val;
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 channel_rd__send__msg;
-  logic [0:0] channel_rd__send__rdy;
-  logic [0:0] channel_rd__send__val;
-
-  ChannelRTL__7f7d2c3d5c6b698e channel_rd
-  (
-    .clk( channel_rd__clk ),
-    .reset( channel_rd__reset ),
-    .recv__msg( channel_rd__recv__msg ),
-    .recv__rdy( channel_rd__recv__rdy ),
-    .recv__val( channel_rd__recv__val ),
-    .send__msg( channel_rd__send__msg ),
-    .send__rdy( channel_rd__send__rdy ),
-    .send__val( channel_rd__send__val )
-  );
-
-  //-------------------------------------------------------------
-  // End of component channel_rd
-  //-------------------------------------------------------------
-
-  //-------------------------------------------------------------
-  // Component channel_wr
-  //-------------------------------------------------------------
-
-  logic [0:0] channel_wr__clk;
-  logic [0:0] channel_wr__reset;
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 channel_wr__recv__msg;
-  logic [0:0] channel_wr__recv__rdy;
-  logic [0:0] channel_wr__recv__val;
-  MemAccessPacket_4_5_8192__68f92223fbe0cb00 channel_wr__send__msg;
-  logic [0:0] channel_wr__send__rdy;
-  logic [0:0] channel_wr__send__val;
-
-  ChannelRTL__7f7d2c3d5c6b698e channel_wr
-  (
-    .clk( channel_wr__clk ),
-    .reset( channel_wr__reset ),
-    .recv__msg( channel_wr__recv__msg ),
-    .recv__rdy( channel_wr__recv__rdy ),
-    .recv__val( channel_wr__recv__val ),
-    .send__msg( channel_wr__send__msg ),
-    .send__rdy( channel_wr__send__rdy ),
-    .send__val( channel_wr__send__val )
-  );
-
-  //-------------------------------------------------------------
-  // End of component channel_wr
-  //-------------------------------------------------------------
-
-  //-------------------------------------------------------------
-  // Component memory
-  //-------------------------------------------------------------
-
-  logic [0:0] memory__clk;
-  logic [6:0] memory__raddr [0:0];
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 memory__rdata [0:0];
-  logic [0:0] memory__reset;
-  logic [6:0] memory__waddr [0:0];
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 memory__wdata [0:0];
-  logic [0:0] memory__wen [0:0];
-
-  RegisterFile__b0f0dcdef9531a03 memory
-  (
-    .clk( memory__clk ),
-    .raddr( memory__raddr ),
-    .rdata( memory__rdata ),
-    .reset( memory__reset ),
-    .waddr( memory__waddr ),
-    .wdata( memory__wdata ),
-    .wen( memory__wen )
-  );
-
-  //-------------------------------------------------------------
-  // End of component memory
-  //-------------------------------------------------------------
-
-  // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/mem/data/DataMemWrapperRTL.py:58
-  // @update
-  // def compose_send_msg():
-  //   s.send.msg @= MemResponseType(0, 0, 0, DataType(0, 0, 0, 0), 0, 0, 0)
-  //   # TODO: change to pipe's out's wen.
-  //   if s.channel_rd.send.val:
-  //     s.send.msg.src                @= s.channel_rd.send.msg.dst
-  //     s.send.msg.dst                @= s.channel_rd.send.msg.src
-  //     s.send.msg.addr               @= s.channel_rd.send.msg.addr
-  //     s.send.msg.data               @= s.memory.rdata[0]
-  //     s.send.msg.src_cgra           @= s.channel_rd.send.msg.src_cgra
-  //     s.send.msg.src_tile           @= s.channel_rd.send.msg.src_tile
-  //     s.send.msg.remote_src_port    @= s.channel_rd.send.msg.remote_src_port
-  
-  always_comb begin : compose_send_msg
-    send__msg = { 3'd0, 2'd0, 13'd0, { 32'd0, 1'd0, 1'd0, 1'd0 }, 4'd0, 3'd0, 2'd0 };
-    if ( channel_rd__send__val ) begin
-      send__msg.src = channel_rd__send__msg.dst;
-      send__msg.dst = channel_rd__send__msg.src;
-      send__msg.addr = channel_rd__send__msg.addr;
-      send__msg.data = memory__rdata[1'd0];
-      send__msg.src_cgra = channel_rd__send__msg.src_cgra;
-      send__msg.src_tile = channel_rd__send__msg.src_tile;
-      send__msg.remote_src_port = channel_rd__send__msg.remote_src_port;
-    end
-  end
-
-  // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/mem/data/DataMemWrapperRTL.py:88
-  // @update
-  // def notify_channel_rdy():
-  //   # TODO: change to SRAM's rdy when replacing register file
-  //   # with SRAM.
-  //   s.channel_rd.send.rdy @= s.send.rdy
-  //   s.channel_wr.send.rdy @= 1
-  
-  always_comb begin : notify_channel_rdy
-    channel_rd__send__rdy = send__rdy;
-    channel_wr__send__rdy = 1'd1;
-  end
-
-  // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/mem/data/DataMemWrapperRTL.py:95
-  // @update
-  // def notify_send_val():
-  //   # TODO: change to SRAM's valid when replacing register file
-  //   # with SRAM.
-  //   s.send.val @= s.channel_rd.send.val
-  
-  always_comb begin : notify_send_val
-    send__val = channel_rd__send__val;
-  end
-
-  // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/mem/data/DataMemWrapperRTL.py:71
-  // @update
-  // def request_memory():
-  //   # Default values.
-  //   s.memory.wen[0]   @= 0
-  //   s.memory.raddr[0] @= PerBankAddrType(0)
-  //   s.memory.waddr[0] @= PerBankAddrType(0)
-  //   s.memory.wdata[0] @= DataType(0, 0, 0, 0)
-  // 
-  //   if s.channel_rd.send.val:
-  //     s.memory.raddr[0] @= \
-  //       trunc(s.channel_rd.send.msg.addr % per_bank_data_mem_size, PerBankAddrType)
-  //   if s.channel_wr.send.val:
-  //     s.memory.waddr[0] @= \
-  //       trunc(s.channel_wr.send.msg.addr % per_bank_data_mem_size, PerBankAddrType)
-  //     s.memory.wdata[0] @= s.channel_wr.send.msg.data
-  //     s.memory.wen[0]   @= 1
-  
-  always_comb begin : request_memory
-    memory__wen[1'd0] = 1'd0;
-    memory__raddr[1'd0] = 7'd0;
-    memory__waddr[1'd0] = 7'd0;
-    memory__wdata[1'd0] = { 32'd0, 1'd0, 1'd0, 1'd0 };
-    if ( channel_rd__send__val ) begin
-      memory__raddr[1'd0] = 7'(channel_rd__send__msg.addr % 13'( __const__per_bank_data_mem_size_at_request_memory ));
-    end
-    if ( channel_wr__send__val ) begin
-      memory__waddr[1'd0] = 7'(channel_wr__send__msg.addr % 13'( __const__per_bank_data_mem_size_at_request_memory ));
-      memory__wdata[1'd0] = channel_wr__send__msg.data;
-      memory__wen[1'd0] = 1'd1;
-    end
-  end
-
-  assign memory__clk = clk;
-  assign memory__reset = reset;
-  assign channel_rd__clk = clk;
-  assign channel_rd__reset = reset;
-  assign channel_wr__clk = clk;
-  assign channel_wr__reset = reset;
-  assign channel_rd__recv__msg = recv_rd__msg;
-  assign recv_rd__rdy = channel_rd__recv__rdy;
-  assign channel_rd__recv__val = recv_rd__val;
-  assign channel_wr__recv__msg = recv_wr__msg;
-  assign recv_wr__rdy = channel_wr__recv__rdy;
-  assign channel_wr__recv__val = recv_wr__val;
-
-endmodule
-
-
-// PyMTL Component Mux Definition
-// At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/arithmetics.py
-
-module Mux__Type_MemAccessPacket_4_5_8192__68f92223fbe0cb00__ninputs_2
-(
-  input  logic [0:0] clk ,
-  input  MemAccessPacket_4_5_8192__68f92223fbe0cb00 in_ [0:1],
-  output MemAccessPacket_4_5_8192__68f92223fbe0cb00 out ,
-  input  logic [0:0] reset ,
-  input  logic [0:0] sel 
-);
-
-  // PyMTL Update Block Source
-  // At /home/lucas/anaconda3/envs/vectorcgra/lib/python3.9/site-packages/pymtl3/stdlib/primitive/arithmetics.py:13
-  // @update
-  // def up_mux():
-  //   s.out @= s.in_[ s.sel ]
-  
-  always_comb begin : up_mux
-    out = in_[sel];
   end
 
 endmodule
@@ -8538,7 +8136,7 @@ module DataMemControllerRTL__995c438324423266
   logic [0:0] memory_wrapper__send__rdy [0:3];
   logic [0:0] memory_wrapper__send__val [0:3];
 
-  DataMemWrapperRTL__3f15d2341fbd9ca9 memory_wrapper__0
+  SpmBankPhysicalStubRTL__3f15d2341fbd9ca9 memory_wrapper__0
   (
     .clk( memory_wrapper__clk[0] ),
     .reset( memory_wrapper__reset[0] ),
@@ -8553,7 +8151,7 @@ module DataMemControllerRTL__995c438324423266
     .send__val( memory_wrapper__send__val[0] )
   );
 
-  DataMemWrapperRTL__3f15d2341fbd9ca9 memory_wrapper__1
+  SpmBankPhysicalStubRTL__3f15d2341fbd9ca9 memory_wrapper__1
   (
     .clk( memory_wrapper__clk[1] ),
     .reset( memory_wrapper__reset[1] ),
@@ -8568,7 +8166,7 @@ module DataMemControllerRTL__995c438324423266
     .send__val( memory_wrapper__send__val[1] )
   );
 
-  DataMemWrapperRTL__3f15d2341fbd9ca9 memory_wrapper__2
+  SpmBankPhysicalStubRTL__3f15d2341fbd9ca9 memory_wrapper__2
   (
     .clk( memory_wrapper__clk[2] ),
     .reset( memory_wrapper__reset[2] ),
@@ -8583,7 +8181,7 @@ module DataMemControllerRTL__995c438324423266
     .send__val( memory_wrapper__send__val[2] )
   );
 
-  DataMemWrapperRTL__3f15d2341fbd9ca9 memory_wrapper__3
+  SpmBankPhysicalStubRTL__3f15d2341fbd9ca9 memory_wrapper__3
   (
     .clk( memory_wrapper__clk[3] ),
     .reset( memory_wrapper__reset[3] ),
@@ -9541,7 +9139,7 @@ module LoopControllerWithRouteTargetsRTL__2e7bda7e7356a214
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:187
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:188
   // @update
   // def expose_route_targets():
   //     active_ccu = s.active_dispatch_ccu
@@ -21484,7 +21082,7 @@ module CgraWithLoopControllerRTL__552669b59b5c552a
   logic [3:0] __tmpvar__route_to_inter_cgra_noc_target_cgra;
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:384
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:423
   // @update
   // def route_cpu_and_noc_to_controllers():
   //     cpu_cmd = s.recv_from_cpu_pkt.msg.payload.cmd
@@ -21621,7 +21219,7 @@ module CgraWithLoopControllerRTL__552669b59b5c552a
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:502
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:541
   // @update
   // def route_loop_controller_to_ctrl_ring():
   //     s.ctrl_ring.recv[loop_controller_endpoint].val @= (
@@ -21651,7 +21249,7 @@ module CgraWithLoopControllerRTL__552669b59b5c552a
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:477
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:516
   // @update
   // def route_ring_events_to_regular_or_loop_controller():
   //     ring_pkt = s.ctrl_ring.send[controller_endpoint].msg
@@ -21694,7 +21292,7 @@ module CgraWithLoopControllerRTL__552669b59b5c552a
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:524
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:563
   // @update
   // def route_to_inter_cgra_noc():
   //     s.controller.send_to_inter_cgra_noc.rdy @= 0

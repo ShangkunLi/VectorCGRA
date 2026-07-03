@@ -146,6 +146,7 @@ def build_dut(args: argparse.Namespace):
         PORT_INDEX_WEST,
     )
     from VectorCGRA.lib.util.data_struct_attr import kAttrCtrl, kAttrData, kAttrPayload
+    import VectorCGRA.mem.data.DataMemControllerRTL as data_mem_controller_module
     from VectorCGRA.mem.data.DataMemControllerRTL import DataMemControllerRTL
     import VectorCGRA.multi_cgra.MeshMultiCgraRTL as mesh_multi_cgra_module
     from VectorCGRA.noc.PyOCN.pymtl3_net.ocnlib.ifcs.positions import mk_ring_pos
@@ -192,6 +193,44 @@ def build_dut(args: argparse.Namespace):
                 s.send_to_remote_target_cgra @= (
                     s.ccu_target_cgra_ids[active_ccu][target_idx]
                 )
+
+    class SpmBankPhysicalStubRTL(Component):
+        def construct(
+            s,
+            DataType,
+            MemReadType,
+            MemWriteType,
+            MemResponseType,
+            global_data_mem_size,
+            per_bank_data_mem_size,
+            is_combinational=True,
+        ):
+            s.recv_rd = RecvIfcRTL(MemReadType)
+            s.recv_wr = RecvIfcRTL(MemWriteType)
+            s.send = SendIfcRTL(MemResponseType)
+
+            @update
+            def respond_to_read_and_drop_write():
+                s.recv_rd.rdy @= s.send.rdy
+                s.recv_wr.rdy @= 1
+                s.send.val @= s.recv_rd.val
+                s.send.msg @= MemResponseType(
+                    0, 0, 0, DataType(0, 0, 0, 0), 0, 0, 0
+                )
+
+                if s.recv_rd.val:
+                    s.send.msg.src @= s.recv_rd.msg.dst
+                    s.send.msg.dst @= s.recv_rd.msg.src
+                    s.send.msg.addr @= s.recv_rd.msg.addr
+                    s.send.msg.data @= DataType(0, 0, 0, 0)
+                    s.send.msg.src_cgra @= s.recv_rd.msg.src_cgra
+                    s.send.msg.src_tile @= s.recv_rd.msg.src_tile
+                    s.send.msg.remote_src_port @= s.recv_rd.msg.remote_src_port
+
+        def line_trace(s):
+            return "spm_bank_physical_stub"
+
+    data_mem_controller_module.DataMemWrapperRTL = SpmBankPhysicalStubRTL
 
     class CgraWithLoopControllerRTL(Component):
         def construct(
