@@ -100,7 +100,7 @@ class LoopCounterRTL(Fu):
       s.cmd_config_upper @= b1(0)
       s.cmd_config_step @= b1(0)
       s.target_ctrl_addr @= s.CtrlAddrType(0)
-      s.target_ctrl_data @= s.DataType(0, 0)
+      s.target_ctrl_data @= s.DataType(0, 0, 0, 0)
       
       if s.recv_opt.val:
         # ===== OPT_LOOP_COUNT: Loop-Driven Mode (Leaf Counter) =====
@@ -119,7 +119,11 @@ class LoopCounterRTL(Fu):
             if ~s.already_done[addr]:
               s.send_to_ctrl_mem.val @= b1(1)
               s.send_to_ctrl_mem.msg @= s.CgraPayloadType(
-                CMD_LEAF_COUNTER_COMPLETE, s.DataType(0, 0), 0, s.recv_opt.msg, addr
+                CMD_LEAF_COUNTER_COMPLETE,
+                s.DataType(0, 0, 0, 0),
+                0,
+                s.recv_opt.msg,
+                addr
               )
               s.send_out[0].val @= b1(1)
               s.recv_opt.rdy @= s.send_to_ctrl_mem.rdy & s.send_out[0].rdy
@@ -173,10 +177,10 @@ class LoopCounterRTL(Fu):
     def update_leaf_counters():
       if s.reset | s.clear:
         for i in range(ctrl_mem_size):
-          s.leaf_lower_bound[i] <<= s.DataType(0, 0)
-          s.leaf_upper_bound[i] <<= s.DataType(0, 0)
-          s.leaf_step[i] <<= s.DataType(0, 0)
-          s.leaf_current_value[i] <<= s.DataType(0, 0)
+          s.leaf_lower_bound[i] <<= s.DataType(0, 0, 0, 0)
+          s.leaf_upper_bound[i] <<= s.DataType(0, 0, 0, 0)
+          s.leaf_step[i] <<= s.DataType(0, 0, 0, 0)
+          s.leaf_current_value[i] <<= s.DataType(0, 0, 0, 0)
       else:
         # CMD Config Updates
         if s.cmd_config_lower:
@@ -195,7 +199,10 @@ class LoopCounterRTL(Fu):
            addr = s.current_ctrl_addr
            if s.send_out[0].val & s.send_out[0].rdy & ~s.loop_terminated:
              s.leaf_current_value[addr] <<= s.DataType(
-               s.leaf_current_value[addr].payload + s.leaf_step[addr].payload, b1(1)
+               s.leaf_current_value[addr].payload + s.leaf_step[addr].payload,
+               b1(1),
+               b1(0),
+               b1(0)
              )
         
         # Runtime reset from LC.
@@ -207,7 +214,7 @@ class LoopCounterRTL(Fu):
     def update_shadow_registers():
       if s.reset | s.clear:
         for i in range(ctrl_mem_size):
-          s.shadow_regs[i] <<= s.DataType(0, 0)
+          s.shadow_regs[i] <<= s.DataType(0, 0, 0, 0)
           s.shadow_valid[i] <<= b1(0)
       else:
         # Runtime update from LC.

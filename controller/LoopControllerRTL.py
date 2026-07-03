@@ -58,11 +58,16 @@ class LoopControllerRTL(Component):
                 num_cgra_rows = 1):
 
     # ===== Derived Types =====
-    AddrType = mk_bits(clog2(data_mem_size))
-    CtrlAddrType = mk_bits(clog2(ctrl_mem_size))
+    data_addr_nbits = clog2(data_mem_size)
+    ctrl_addr_nbits = clog2(ctrl_mem_size)
+    tile_id_nbits = clog2(num_tiles + 1)
+    ccu_id_nbits = max(clog2(num_ccus), 1)
+
+    AddrType = mk_bits(data_addr_nbits)
+    CtrlAddrType = mk_bits(ctrl_addr_nbits)
     CgraPayloadType = mk_cgra_payload(DataType, AddrType, CtrlType, CtrlAddrType)
-    CCUIdType = mk_bits(max(clog2(num_ccus), 1))
-    TileIdType = mk_bits(clog2(num_tiles + 1))
+    CCUIdType = mk_bits(ccu_id_nbits)
+    TileIdType = mk_bits(tile_id_nbits)
     CgraIdType = mk_bits(max(clog2(num_cgra_columns * num_cgra_rows), 1))
     StateType = mk_bits(2)
     CountType = mk_bits(4)
@@ -134,9 +139,9 @@ class LoopControllerRTL(Component):
       s.recv_from_tile.rdy @= b1(0)
       s.recv_from_remote.rdy @= b1(0)
       s.send_to_tile.val @= b1(0)
-      s.send_to_tile.msg @= CgraPayloadType(0, DataType(0, 0), 0, CtrlType(0), 0)
+      s.send_to_tile.msg @= CgraPayloadType(0, DataType(0, 0, 0, 0), 0, 0, 0)
       s.send_to_remote.val @= b1(0)
-      s.send_to_remote.msg @= CgraPayloadType(0, DataType(0, 0), 0, CtrlType(0), 0)
+      s.send_to_remote.msg @= CgraPayloadType(0, DataType(0, 0, 0, 0), 0, 0, 0)
       s.config_cmd_valid @= b1(0)
       s.tile_event_valid @= b1(0)
       s.remote_event_valid @= b1(0)
@@ -169,17 +174,17 @@ class LoopControllerRTL(Component):
           out_data = s.ccu_current_value[ccu_id]
         else:
           out_cmd = CMD_RESET_LEAF_COUNTER
-          out_data = DataType(0, 0)
+          out_data = DataType(0, 0, 0, 0)
 
         if s.ccu_target_is_remote[ccu_id][tidx]:
           s.send_to_remote.val @= b1(1)
           s.send_to_remote.msg @= CgraPayloadType(
-            out_cmd, out_data, 0, CtrlType(0),
+            out_cmd, out_data, 0, 0,
             s.ccu_target_ctrl_addrs[ccu_id][tidx])
         else:
           s.send_to_tile.val @= b1(1)
           s.send_to_tile.msg @= CgraPayloadType(
-            out_cmd, out_data, 0, CtrlType(0),
+            out_cmd, out_data, 0, 0,
             s.ccu_target_ctrl_addrs[ccu_id][tidx])
 
       # ----- Configuration commands -----
@@ -228,9 +233,9 @@ class LoopControllerRTL(Component):
     def update_ccu_ff():
       if s.reset:
         for i in range(num_ccus):
-          s.ccu_lower_bound[i] <<= DataType(0, 0)
-          s.ccu_upper_bound[i] <<= DataType(0, 0)
-          s.ccu_step[i] <<= DataType(0, 0)
+          s.ccu_lower_bound[i] <<= DataType(0, 0, 0, 0)
+          s.ccu_upper_bound[i] <<= DataType(0, 0, 0, 0)
+          s.ccu_step[i] <<= DataType(0, 0, 0, 0)
           s.ccu_is_root[i] <<= b1(0)
           s.ccu_parent_ccu_id[i] <<= CCUIdType(0)
           s.ccu_child_complete_count[i] <<= CountType(0)
@@ -243,13 +248,13 @@ class LoopControllerRTL(Component):
             s.ccu_target_cgra_ids[i][t] <<= CgraIdType(0)
             s.ccu_target_shadow_only[i][t] <<= b1(0)
           s.ccu_state[i] <<= StateType(CCU_STATE_IDLE)
-          s.ccu_current_value[i] <<= DataType(0, 0)
+          s.ccu_current_value[i] <<= DataType(0, 0, 0, 0)
           s.ccu_received_complete_count[i] <<= CountType(0)
           s.ccu_dispatch_idx[i] <<= TargetIdxType(0)
       else:
         # ===== Configuration =====
         if s.config_cmd_valid:
-          ccu_idx = s.recv_config.msg.ctrl_addr
+          ccu_idx = trunc(s.recv_config.msg.ctrl_addr, CCUIdType)
 
           if s.recv_config.msg.cmd == CMD_LC_CONFIG_LOWER:
             s.ccu_lower_bound[ccu_idx] <<= s.recv_config.msg.data
@@ -266,27 +271,28 @@ class LoopControllerRTL(Component):
                 CountType(s.recv_config.msg.data.payload[0:4])
 
           elif s.recv_config.msg.cmd == CMD_LC_CONFIG_TARGET:
-            tidx = s.ccu_config_target_idx[ccu_idx]
+            target_count = s.ccu_config_target_idx[ccu_idx]
+            tidx = trunc(target_count, TargetIdxType)
             s.ccu_target_ctrl_addrs[ccu_idx][tidx] <<= \
-                CtrlAddrType(s.recv_config.msg.data.payload[0:clog2(ctrl_mem_size)])
+                CtrlAddrType(s.recv_config.msg.data.payload[0:ctrl_addr_nbits])
             s.ccu_target_tile_ids[ccu_idx][tidx] <<= \
                 TileIdType(s.recv_config.msg.data.payload[
-                  clog2(ctrl_mem_size):clog2(ctrl_mem_size)+clog2(num_tiles+1)])
+                  ctrl_addr_nbits:ctrl_addr_nbits + tile_id_nbits])
             s.ccu_target_is_remote[ccu_idx][tidx] <<= \
                 s.recv_config.msg.data.predicate
             s.ccu_target_cgra_ids[ccu_idx][tidx] <<= \
                 trunc(s.recv_config.msg.data_addr, CgraIdType)
             # shadow_only encoded in the MSB of data_addr.
             s.ccu_target_shadow_only[ccu_idx][tidx] <<= \
-                s.recv_config.msg.data_addr[clog2(data_mem_size)-1]
-            s.ccu_config_target_idx[ccu_idx] <<= tidx + CountType(1)
-            s.ccu_num_targets[ccu_idx] <<= tidx + CountType(1)
+                s.recv_config.msg.data_addr[data_addr_nbits - 1]
+            s.ccu_config_target_idx[ccu_idx] <<= target_count + CountType(1)
+            s.ccu_num_targets[ccu_idx] <<= target_count + CountType(1)
 
           elif s.recv_config.msg.cmd == CMD_LC_CONFIG_PARENT:
             s.ccu_parent_ccu_id[ccu_idx] <<= \
-                CCUIdType(s.recv_config.msg.data.payload[0:max(clog2(num_ccus),1)])
+                CCUIdType(s.recv_config.msg.data.payload[0:ccu_id_nbits])
             s.ccu_is_root[ccu_idx] <<= \
-                s.recv_config.msg.data.payload[max(clog2(num_ccus),1)]
+                s.recv_config.msg.data.payload[ccu_id_nbits]
 
           elif s.recv_config.msg.cmd == CMD_LC_LAUNCH:
             for i in range(num_ccus):
@@ -342,7 +348,9 @@ class LoopControllerRTL(Component):
                   if new_count >= s.ccu_child_complete_count[i]:
                     new_val = DataType(
                       s.ccu_current_value[i].payload + s.ccu_step[i].payload,
-                      b1(1))
+                      b1(1),
+                      b1(0),
+                      b1(0))
                     s.ccu_current_value[i] <<= new_val
                     # Check if loop is done BEFORE dispatching.
                     if new_val.payload >= s.ccu_upper_bound[i].payload:
@@ -356,7 +364,7 @@ class LoopControllerRTL(Component):
                         if p_count >= s.ccu_child_complete_count[parent]:
                           p_new_val = DataType(
                             s.ccu_current_value[parent].payload + \
-                            s.ccu_step[parent].payload, b1(1))
+                            s.ccu_step[parent].payload, b1(1), b1(0), b1(0))
                           s.ccu_current_value[parent] <<= p_new_val
                           if p_new_val.payload >= s.ccu_upper_bound[parent].payload:
                             s.ccu_state[parent] <<= StateType(CCU_STATE_COMPLETE)
@@ -379,7 +387,9 @@ class LoopControllerRTL(Component):
                 if new_count >= s.ccu_child_complete_count[i]:
                   new_val = DataType(
                     s.ccu_current_value[i].payload + s.ccu_step[i].payload,
-                    b1(1))
+                    b1(1),
+                    b1(0),
+                    b1(0))
                   s.ccu_current_value[i] <<= new_val
                   if new_val.payload >= s.ccu_upper_bound[i].payload:
                     s.ccu_state[i] <<= StateType(CCU_STATE_COMPLETE)

@@ -25,6 +25,7 @@ class ExtractPredicateRTL(Fu):
     num_entries = 2
     FuInType = mk_bits(clog2(num_inports + 1))
     CountType = mk_bits(clog2(num_entries + 1))
+    DataPayloadType = s.DataType.get_field_type(kAttrPayload)
 
     s.in0 = Wire(FuInType)
     
@@ -60,7 +61,9 @@ class ExtractPredicateRTL(Fu):
           # When loop is running (predicate=1) -> payload=1
           # When loop terminates (predicate=0) -> payload=0
           # Downstream NOT will invert: running->0 (no RET), done->1 (trigger RET)
-          s.send_out[0].msg.payload @= zext(s.recv_in[s.in0_idx].msg.predicate, s.DataType.get_field_type(kAttrPayload))
+          s.send_out[0].msg.payload @= zext(
+            s.recv_in[s.in0_idx].msg.predicate, DataPayloadType
+          )
           s.send_out[0].msg.predicate @= 1
           
           s.send_out[0].val @= s.recv_in[s.in0_idx].val
