@@ -3,6 +3,7 @@
 source scripts/lib_setup.tcl
 source scripts/design_setup.tcl
 source scripts/report_utils.tcl
+source scripts/placement_utils.tcl
 source $MODULE_NAMES_TCL
 
 setMultiCpuUsage -localCpu $INNOVUS_CPUS
@@ -119,6 +120,8 @@ proc resolve_floorplan_site {configured_site lef_files} {
 set FLOORPLAN_SITE [resolve_floorplan_site $SITE $lefs]
 setFPlanMode -snapBlockGrid LayerTrack
 floorPlan -site $FLOORPLAN_SITE -r 1.0 $FP_UTIL $FP_MARGIN $FP_MARGIN $FP_MARGIN $FP_MARGIN
+amoeba_place_boundary_pins
+amoeba_apply_core_macro_grid $CORE_MODULE
 
 setDesignMode -topRoutingLayer $TOP_ROUTING_LAYER
 setDesignMode -bottomRoutingLayer 2
