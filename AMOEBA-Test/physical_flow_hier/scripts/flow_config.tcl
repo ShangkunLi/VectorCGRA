@@ -16,7 +16,7 @@ set RESET_PORT "reset"
 set CLK_PERIOD_PS 1250
 
 set DC_CORES 16
-set INNOVUS_CPUS 16
+set INNOVUS_CPUS 8
 
 set WORK_DIR "./work"
 set REPORT_DIR "./reports"
@@ -46,7 +46,7 @@ set DC_DB_FILES [list \
 # explicit paths.
 set INNOVUS_LIB_FILES [list]
 set INNOVUS_LEF_FILES [list]
-set INNOVUS_QRC_FILE ""
+set INNOVUS_QRC_FILE "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL/RC_Extraction/Cadence/RC_QRC_cln22ulp_1p8m_5x2z_ut-alrdl_9corners_shrink_1.0p1a/RC_QRC_cln22ulp_1p08m+ut-alrdl_5x2z_typical/qrcTechFile"
 
 set SITE "unit"
 set TOP_ROUTING_LAYER 9
