@@ -43,10 +43,14 @@ set DC_DB_FILES [list \
 
 # Innovus technology files are discovered under TECH_ROOT by default. If the
 # automatic discovery picks the wrong files, replace the empty lists below with
-# explicit paths.
+# explicit paths. INNOVUS_LEF_FILES is a complete ordered override; otherwise
+# the flow loads INNOVUS_TECH_LEF_FILES first and INNOVUS_CELL_LEF_FILES second.
 set INNOVUS_LIB_FILES [list]
 set INNOVUS_LEF_FILES [list]
+set INNOVUS_TECH_LEF_FILES [list]
+set INNOVUS_CELL_LEF_FILES [list]
 set INNOVUS_QRC_FILE "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL/RC_Extraction/Cadence/RC_QRC_cln22ulp_1p8m_5x2z_ut-alrdl_9corners_shrink_1.0p1a/RC_QRC_cln22ulp_1p08m+ut-alrdl_5x2z_typical/qrcTechFile"
+set TSMC22_ROUTING_STACK "5x2z"
 
 set SITE "unit"
 set TOP_ROUTING_LAYER 9

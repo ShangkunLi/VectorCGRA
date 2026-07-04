@@ -33,10 +33,14 @@ set DC_DB_FILES [list \
 
 # Innovus technology files are discovered under TECH_ROOT by default. If the
 # automatic discovery picks the wrong files, replace the empty lists below with
-# explicit paths.
+# explicit paths. INNOVUS_LEF_FILES is a complete ordered override; otherwise
+# the flow loads INNOVUS_TECH_LEF_FILES first and INNOVUS_CELL_LEF_FILES second.
 set INNOVUS_LIB_FILES [list]
 set INNOVUS_LEF_FILES [list]
+set INNOVUS_TECH_LEF_FILES [list]
+set INNOVUS_CELL_LEF_FILES [list]
 set INNOVUS_QRC_FILE ""
+set TSMC22_ROUTING_STACK "5x2z"
 
 # This site name must match the SITE declared in the technology LEF. TSMC
 # standard-cell LEFs commonly use "unit"; change here if Innovus reports an
@@ -47,4 +51,3 @@ set TOP_ROUTING_LAYER 9
 set FP_UTIL 0.55
 set FP_MARGIN 5
 set PIN_SPREAD_FRACTION 0.98
-

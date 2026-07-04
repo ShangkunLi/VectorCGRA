@@ -19,6 +19,12 @@ From this directory on the ECE LAB7 VDI:
 ./scripts/run_innovus.sh
 ```
 
+If Innovus reports that layer `M1` is missing while reading a standard-cell
+macro, check `scripts/flow_config.tcl`: the technology LEF must be listed in
+`INNOVUS_TECH_LEF_FILES` before the LVT standard-cell LEF in
+`INNOVUS_CELL_LEF_FILES`. Leaving both lists empty asks the shared setup script
+to discover and order them automatically.
+
 Useful outputs:
 
 ```text

@@ -133,18 +133,26 @@ find /usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL -name '*.lef'
 find /usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL -name '*.tch'
 ```
 
-Then put the exact files into `INNOVUS_LEF_FILES` and `INNOVUS_QRC_FILE` inside
-`scripts/flow_config.tcl`.
+Then put the exact files into `INNOVUS_TECH_LEF_FILES`,
+`INNOVUS_CELL_LEF_FILES`, and `INNOVUS_QRC_FILE` inside
+`scripts/flow_config.tcl`. The technology LEF must be loaded before the
+standard-cell LEF; otherwise Innovus sees cell pins on layers like `M1` before
+those layers are defined.
 
 For example:
 
 ```tcl
-set INNOVUS_LEF_FILES [list \
+set INNOVUS_TECH_LEF_FILES [list \
     "/path/to/tech.lef" \
+]
+set INNOVUS_CELL_LEF_FILES [list \
     "/path/to/stdcell.lef" \
 ]
 set INNOVUS_QRC_FILE "/path/to/qrc.tch"
 ```
+
+Use `INNOVUS_LEF_FILES` only when you want to override the complete ordered LEF
+list yourself.
 
 Do the same for `INNOVUS_LIB_FILES` only if automatic `.lib` discovery under
 `TECH_ROOT` selects the wrong corner files.
