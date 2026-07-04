@@ -71,11 +71,11 @@ proc write_area_report_for_pattern {pattern report_file} {
         close $fp
         return
     }
-    report_area -hierarchy $cells > $report_file
+    report_area $cells -hierarchy > $report_file
 }
 
 report_area -hierarchy > ${REPORT_DIR}/dc_area.rpt
-report_area -hierarchy $core_cells > ${REPORT_DIR}/dc_area_core_instances.rpt
+report_area $core_cells -hierarchy > ${REPORT_DIR}/dc_area_core_instances.rpt
 write_area_report_for_pattern "*cgra__*" ${REPORT_DIR}/dc_area_cgra_cells.rpt
 write_area_report_for_pattern "*routers*" ${REPORT_DIR}/dc_area_inter_core_noc.rpt
 report_timing -delay_type max -max_paths 50 > ${REPORT_DIR}/dc_timing.rpt
