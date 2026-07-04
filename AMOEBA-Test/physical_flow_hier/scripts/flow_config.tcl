@@ -36,6 +36,7 @@ set TECH_ROOT "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL"
 set TSMC22_STD_CELL "tcbn22ullbwp30p140lvt"
 set TSMC22_REV "Rev110b"
 set TSMC22_NLDM_DIR "${TECH_ROOT}/SC/${TSMC22_STD_CELL}/${TSMC22_REV}/Front_End/timing_power_noise/NLDM/${TSMC22_STD_CELL}_110b"
+set TSMC22_LIB_CORNER "ffg0p88v0c"
 
 set DC_DB_FILES [list \
     "${TSMC22_NLDM_DIR}/tcbn22ullbwp30p140lvtffg0p88v0c.db" \

@@ -43,6 +43,76 @@ proc path_contains {path token} {
     return [expr {[string first [string tolower $token] [string tolower $path]] >= 0}]
 }
 
+proc is_liberty_timing_lib {path} {
+    if {[string equal -nocase [file tail $path] "cds.lib"]} {
+        return 0
+    }
+    if {[path_contains $path "/cdk/"] || [path_contains $path "/back_end/"]} {
+        return 0
+    }
+    if {[catch {set fp [open $path r]}]} {
+        return 0
+    }
+    set text [read $fp 1048576]
+    close $fp
+
+    return [regexp -nocase {(^|\n)[ \t]*library[ \t]*\(} $text]
+}
+
+proc choose_one_liberty_timing_lib {lib_files} {
+    global TSMC22_LIB_CORNER TSMC22_STD_CELL
+
+    set timing_libs [list]
+    foreach lib $lib_files {
+        if {[is_liberty_timing_lib $lib]} {
+            lappend timing_libs $lib
+        }
+    }
+    if {[llength $timing_libs] == 0} {
+        return [list]
+    }
+
+    if {[info exists TSMC22_LIB_CORNER] && $TSMC22_LIB_CORNER ne ""} {
+        set corner_matches [list]
+        foreach lib $timing_libs {
+            if {[path_contains $lib $TSMC22_LIB_CORNER]} {
+                lappend corner_matches $lib
+            }
+        }
+        if {[llength $corner_matches] > 0} {
+            set timing_libs $corner_matches
+        }
+    }
+
+    set best_path ""
+    set best_score -1
+    foreach lib $timing_libs {
+        set score 0
+        if {[info exists TSMC22_STD_CELL] &&
+            [path_contains $lib $TSMC22_STD_CELL]} {
+            incr score 50
+        }
+        if {[info exists TSMC22_LIB_CORNER] &&
+            $TSMC22_LIB_CORNER ne "" &&
+            [path_contains $lib $TSMC22_LIB_CORNER]} {
+            incr score 40
+        }
+        if {[path_contains $lib "/nldm/"]} {
+            incr score 10
+        }
+        if {[path_contains $lib "/front_end/"]} {
+            incr score 5
+        }
+        if {$score > $best_score || ($score == $best_score &&
+                                     ($best_path eq "" ||
+                                      [string compare $lib $best_path] < 0))} {
+            set best_score $score
+            set best_path $lib
+        }
+    }
+    return [list $best_path]
+}
+
 proc is_technology_lef {path} {
     if {[catch {set fp [open $path r]}]} {
         return 0
@@ -125,7 +195,8 @@ proc discover_innovus_lib_files {} {
     if {![file exists $std_cell_search_root]} {
         return [list]
     }
-    return [find_files_recursive $std_cell_search_root "*.lib"]
+    return [choose_one_liberty_timing_lib \
+                [find_files_recursive $std_cell_search_root "*.lib"]]
 }
 
 proc discover_innovus_tech_lefs {} {
@@ -192,6 +263,15 @@ proc discover_innovus_cell_lefs {} {
 
 if {[llength $INNOVUS_LIB_FILES] > 0} {
     set lib_files $INNOVUS_LIB_FILES
+    foreach lib $lib_files {
+        if {![is_liberty_timing_lib $lib]} {
+            puts stderr "INNOVUS_LIB_FILES contains a non-Liberty timing file:"
+            puts stderr "  $lib"
+            puts stderr "Innovus MMMC timing libraries must be Liberty .lib files,"
+            puts stderr "not Cadence cds.lib or back-end CDK mapping files."
+            exit 1
+        }
+    }
 } else {
     set lib_files [discover_innovus_lib_files]
 }
@@ -239,6 +319,15 @@ if {$INNOVUS_QRC_FILE ne ""} {
 
 if {[llength $lib_files] == 0} {
     puts stderr "No Innovus .lib files found. Edit TECH_ROOT or INNOVUS_LIB_FILES in scripts/flow_config.tcl."
+    exit 1
+}
+if {[llength $lib_files] != 1} {
+    puts stderr "Expected exactly one Innovus Liberty timing library for this flow, but got:"
+    foreach lib $lib_files {
+        puts stderr "  $lib"
+    }
+    puts stderr "Set INNOVUS_LIB_FILES to the single .lib matching the DC corner,"
+    puts stderr "for example the ffg0p88v0c NLDM Liberty file."
     exit 1
 }
 if {[llength $lef_files] == 0} {
