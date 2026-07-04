@@ -59,5 +59,6 @@ ungroup -all -flatten
 change_names -rules verilog -hierarchy
 write -format verilog -hierarchy -output $CORE_NETLIST
 write -format ddc -hierarchy -output $CORE_DDC
+write_sdc $CORE_SDC
 
 exit

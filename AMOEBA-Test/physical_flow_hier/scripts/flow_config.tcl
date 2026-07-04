@@ -28,7 +28,11 @@ set MODULE_NAMES_TCL "${WORK_DIR}/module_names.tcl"
 set TOP_ONLY_RTL "${WORK_DIR}/amoeba_top_without_core.v"
 set CORE_DDC "${BLOCK_HANDOFF_DIR}/${CORE_DESIGN}.ddc"
 set CORE_NETLIST "${BLOCK_HANDOFF_DIR}/${CORE_DESIGN}.v"
+set CORE_SDC "${BLOCK_HANDOFF_DIR}/${CORE_DESIGN}.sdc"
+set CORE_LEF "${BLOCK_HANDOFF_DIR}/${CORE_DESIGN}.lef"
+set CORE_DEF "${BLOCK_HANDOFF_DIR}/${CORE_DESIGN}.def"
 set NETLIST "${HANDOFF_DIR}/${DESIGN}.v"
+set TOP_MACRO_NETLIST "${HANDOFF_DIR}/${DESIGN}_top_macro.v"
 set SDC_FILE "${HANDOFF_DIR}/${DESIGN}.sdc"
 
 # TSMC22 ULL library available in the ELEC6910 EDA environment.
@@ -54,7 +58,7 @@ set INNOVUS_QRC_FILE "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL/RC_Extraction/C
 set TSMC22_ROUTING_STACK "5x2z"
 
 # Preferred placement row site. If this site is unavailable after init_design,
-# run_innovus.tcl falls back to the SITE used by the loaded standard-cell LEF.
+# the Innovus scripts fall back to the SITE used by the loaded standard-cell LEF.
 set SITE "unit"
 set TOP_ROUTING_LAYER 9
 set FP_UTIL 0.55

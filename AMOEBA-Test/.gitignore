@@ -1,0 +1,31 @@
+# Generated RTL and physical-design handoff artifacts.
+generated/
+
+# Synopsys DC / Cadence Innovus outputs.
+physical_flow/log/
+physical_flow/reports/
+physical_flow/results/
+physical_flow/summaryReport/
+physical_flow/timingReports/
+physical_flow/enc/
+physical_flow/def/
+physical_flow/WORK*/
+physical_flow/work/
+physical_flow/*_DETAILS.rpt
+
+physical_flow_hier/log/
+physical_flow_hier/reports/
+physical_flow_hier/results/
+physical_flow_hier/summaryReport/
+physical_flow_hier/timingReports/
+physical_flow_hier/enc/
+physical_flow_hier/def/
+physical_flow_hier/WORK*/
+physical_flow_hier/work/
+physical_flow_hier/block_handoff/
+physical_flow_hier/syn_handoff/
+physical_flow_hier/*_DETAILS.rpt
+
+# Python caches.
+__pycache__/
+*.pyc

@@ -1,25 +1,27 @@
-# Minimal Innovus flow for DC-synthesized AMOEBA handoff.
+# Harden one 2x2-CGRA core as an Innovus macro.
 
 source scripts/lib_setup.tcl
 source scripts/design_setup.tcl
 source scripts/report_utils.tcl
+source $MODULE_NAMES_TCL
 
 setMultiCpuUsage -localCpu $INNOVUS_CPUS
 
-if {![file exists $NETLIST]} {
-    puts stderr "Netlist not found: $NETLIST. Run scripts/run_dc.sh first."
+if {![file exists $CORE_NETLIST]} {
+    puts stderr "Core netlist not found: $CORE_NETLIST. Run scripts/run_dc_hier.sh first."
     exit 1
 }
-if {![file exists $SDC_FILE]} {
-    puts stderr "SDC not found: $SDC_FILE. Run scripts/run_dc.sh first."
+if {![file exists $CORE_SDC]} {
+    puts stderr "Core SDC not found: $CORE_SDC. Run scripts/run_dc_hier.sh first."
     exit 1
 }
 
+set SDC_FILE $CORE_SDC
 source scripts/mmmc_setup.tcl
 
-set rptDir "summaryReport"
-set encDir "enc"
-set defDir "def"
+set rptDir "summaryReport/core"
+set encDir "enc/core"
+set defDir "def/core"
 foreach dir [list $rptDir $encDir $defDir timingReports reports] {
     if {![file exists $dir]} {
         exec mkdir -p $dir
@@ -28,10 +30,10 @@ foreach dir [list $rptDir $encDir $defDir timingReports reports] {
 
 set init_pwr_net VDD
 set init_gnd_net VSS
-set init_verilog $NETLIST
+set init_verilog $CORE_NETLIST
 set init_design_netlisttype "Verilog"
 set init_design_settop 1
-set init_top_cell $TOP_MODULE
+set init_top_cell $CORE_MODULE
 set init_lef_file $lefs
 
 init_design -setup {WC_VIEW} -hold {BC_VIEW}
@@ -92,10 +94,6 @@ proc resolve_floorplan_site {configured_site lef_files} {
         return $configured_site
     }
 
-    if {$configured_site ne ""} {
-        puts "Configured SITE '$configured_site' was not found in the loaded LEFs."
-    }
-
     set macro_sites [get_macro_sites_from_lefs $lef_files]
     puts "Standard-cell macro SITE candidates from LEF: $macro_sites"
     foreach site $macro_sites {
@@ -110,7 +108,7 @@ proc resolve_floorplan_site {configured_site lef_files} {
         return $site
     }
 
-    puts stderr "No placement SITE was found after init_design. Check the loaded technology and standard-cell LEFs."
+    puts stderr "No placement SITE was found after init_design."
     exit 1
 }
 
@@ -121,21 +119,20 @@ floorPlan -site $FLOORPLAN_SITE -r 1.0 $FP_UTIL $FP_MARGIN $FP_MARGIN $FP_MARGIN
 setDesignMode -topRoutingLayer $TOP_ROUTING_LAYER
 setDesignMode -bottomRoutingLayer 2
 
-echo "Physical Design Stage, Core Area (um^2), Standard Cell Area (um^2), Macro Area (um^2), Total Power, Wirelength(um)" > ${DESIGN}_DETAILS.rpt
+echo "Physical Design Stage, Core Area (um^2), Standard Cell Area (um^2), Macro Area (um^2), Total Power, Wirelength(um)" > ${CORE_DESIGN}_DETAILS.rpt
 set rpt_post_synth [extract_report postSynth]
-echo "$rpt_post_synth" >> ${DESIGN}_DETAILS.rpt
+echo "$rpt_post_synth" >> ${CORE_DESIGN}_DETAILS.rpt
 
-defOut -floorplan ${defDir}/${DESIGN}_fp.def
-saveNetlist -removePowerGround ${defDir}/${TOP_MODULE}_post_init.v
-saveDesign ${encDir}/${DESIGN}_init.enc
+defOut -floorplan ${defDir}/${CORE_DESIGN}_fp.def
+saveDesign ${encDir}/${CORE_DESIGN}_init.enc
 
-place_opt_design -out_dir $rptDir -prefix place
+place_opt_design -out_dir $rptDir -prefix core_place
 optDesign -preCTS
-saveDesign ${encDir}/${DESIGN}_placed.enc
-defOut -floorplan -placement ${defDir}/${DESIGN}_placed.def
+saveDesign ${encDir}/${CORE_DESIGN}_placed.enc
+defOut -floorplan -placement ${defDir}/${CORE_DESIGN}_placed.def
 
 set rpt_pre_cts [extract_report preCTS]
-echo "$rpt_pre_cts" >> ${DESIGN}_DETAILS.rpt
+echo "$rpt_pre_cts" >> ${CORE_DESIGN}_DETAILS.rpt
 
 create_ccopt_clock_tree_spec
 ccopt_design
@@ -145,9 +142,9 @@ set_propagated_clock [all_clocks]
 set_clock_propagation propagated
 optDesign -postCTS
 
-saveDesign ${encDir}/${DESIGN}_cts.enc
+saveDesign ${encDir}/${CORE_DESIGN}_cts.enc
 set rpt_post_cts [extract_report postCTS]
-echo "$rpt_post_cts" >> ${DESIGN}_DETAILS.rpt
+echo "$rpt_post_cts" >> ${CORE_DESIGN}_DETAILS.rpt
 
 setNanoRouteMode -drouteVerboseViolationSummary 1
 setNanoRouteMode -routeWithSiDriven true
@@ -156,28 +153,29 @@ setNanoRouteMode -routeUseAutoVia true
 setNanoRouteMode -drouteAutoStop false
 
 routeDesign
-saveDesign ${encDir}/${DESIGN}_route.enc
-defOut -netlist -floorplan -routing ${defDir}/${DESIGN}_route.def
+saveDesign ${encDir}/${CORE_DESIGN}_route.enc
+defOut -netlist -floorplan -routing $CORE_DEF
 
 verify_connectivity -error 0 -geom_connect -no_antenna
 verify_drc -limit 0
 
 set rpt_post_route [extract_report postRoute]
-echo "$rpt_post_route" >> ${DESIGN}_DETAILS.rpt
+echo "$rpt_post_route" >> ${CORE_DESIGN}_DETAILS.rpt
 
 optDesign -postRoute
 
 set rpt_post_route_opt [extract_report postRouteOpt]
-echo "$rpt_post_route_opt" >> ${DESIGN}_DETAILS.rpt
+echo "$rpt_post_route_opt" >> ${CORE_DESIGN}_DETAILS.rpt
 
 verify_connectivity -error 0 -geom_connect -no_antenna
 verify_drc -limit 0
 
 summaryReport -noHtml -outfile ${rptDir}/post_route.sum
-write_area_breakdown_csv reports/innovus_area_breakdown.csv
-write_tile_area_breakdown_csv reports/innovus_tile_area_breakdown.csv
-defOut -netlist -floorplan -routing ${defDir}/${DESIGN}.def
-saveNetlist -removePowerGround ${defDir}/${TOP_MODULE}_post_route.v
-saveDesign ${encDir}/${DESIGN}.enc
+write_area_breakdown_csv reports/innovus_core_area_breakdown.csv
+write_tile_area_breakdown_csv reports/innovus_core_tile_area_breakdown.csv
+defOut -netlist -floorplan -routing $CORE_DEF
+saveNetlist -removePowerGround ${defDir}/${CORE_MODULE}_post_route.v
+lefOut $CORE_LEF
+saveDesign ${encDir}/${CORE_DESIGN}.enc
 
 exit
