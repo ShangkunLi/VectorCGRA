@@ -10,6 +10,11 @@ problem. It uses two DC stages:
 The generated PyMTL Verilog has a hash suffix on the core module name. The flow
 finds that name automatically and writes it to `work/module_names.tcl`.
 
+The current timing target is 700MHz, set once in
+`scripts/flow_config.tcl` as `CLK_PERIOD_PS = 1428.571`. Both DC stages use
+that value to write the core and top SDC files, and the Innovus stages consume
+those SDC files.
+
 ## Run
 
 From this directory on the ECE LAB7 VDI:
