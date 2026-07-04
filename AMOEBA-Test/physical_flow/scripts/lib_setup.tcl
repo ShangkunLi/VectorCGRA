@@ -6,22 +6,38 @@ set lib_files {}
 set lef_files {}
 set qrc_file  ""
 
+proc find_files_recursive {root pattern} {
+    set files [list]
+    if {![file exists $root]} {
+        return $files
+    }
+    if {[catch {exec find $root -type f -name $pattern} found]} {
+        return $files
+    }
+    foreach path [split $found "\n"] {
+        if {$path ne ""} {
+            lappend files $path
+        }
+    }
+    return $files
+}
+
 if {[llength $INNOVUS_LIB_FILES] > 0} {
     set lib_files $INNOVUS_LIB_FILES
 } elseif {[file exists $TECH_ROOT]} {
-    set lib_files [glob -nocomplain -directory $TECH_ROOT -types f *.lib */*.lib */*/*.lib */*/*/*.lib */*/*/*/*.lib */*/*/*/*/*.lib */*/*/*/*/*/*.lib]
+    set lib_files [find_files_recursive $TECH_ROOT "*.lib"]
 }
 
 if {[llength $INNOVUS_LEF_FILES] > 0} {
     set lef_files $INNOVUS_LEF_FILES
 } elseif {[file exists $TECH_ROOT]} {
-    set lef_files [glob -nocomplain -directory $TECH_ROOT -types f *.lef */*.lef */*/*.lef */*/*/*.lef */*/*/*/*.lef */*/*/*/*/*.lef */*/*/*/*/*/*.lef]
+    set lef_files [find_files_recursive $TECH_ROOT "*.lef"]
 }
 
 if {$INNOVUS_QRC_FILE ne ""} {
     set qrc_file $INNOVUS_QRC_FILE
 } elseif {[file exists $TECH_ROOT]} {
-    set qrc_candidates [glob -nocomplain -directory $TECH_ROOT -types f *.tch */*.tch */*/*.tch */*/*/*.tch */*/*/*/*.tch */*/*/*/*/*.tch */*/*/*/*/*/*.tch]
+    set qrc_candidates [find_files_recursive $TECH_ROOT "*.tch"]
     if {[llength $qrc_candidates] > 0} {
         set qrc_file [lindex $qrc_candidates 0]
     }
@@ -37,6 +53,8 @@ if {[llength $lef_files] == 0} {
 }
 if {$qrc_file eq ""} {
     puts stderr "No Innovus QRC .tch file found. Edit TECH_ROOT or INNOVUS_QRC_FILE in scripts/flow_config.tcl."
+    puts stderr "Try searching manually on the VDI with:"
+    puts stderr "  find $TECH_ROOT -type f \\( -name '*.tch' -o -iname '*qrc*' -o -name '*.ict' \\)"
     exit 1
 }
 
