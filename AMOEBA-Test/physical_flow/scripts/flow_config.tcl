@@ -43,9 +43,8 @@ set INNOVUS_CELL_LEF_FILES [list]
 set INNOVUS_QRC_FILE ""
 set TSMC22_ROUTING_STACK "5x2z"
 
-# This site name must match the SITE declared in the technology LEF. TSMC
-# standard-cell LEFs commonly use "unit"; change here if Innovus reports an
-# unknown site.
+# Preferred placement row site. If this site is unavailable after init_design,
+# run_innovus.tcl falls back to the SITE used by the loaded standard-cell LEF.
 set SITE "unit"
 
 set TOP_ROUTING_LAYER 9

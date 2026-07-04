@@ -52,8 +52,71 @@ setOptMode -powerEffort low -leakageToDynamicRatio 0.5 \
 
 createBasicPathGroups -expanded
 
+proc get_available_sites {} {
+    set sites [list]
+    if {[catch {set db_sites [dbGet head.sites.name]}]} {
+        return $sites
+    }
+    foreach site $db_sites {
+        if {$site ne "" && $site ne "0x0" &&
+            [lsearch -exact $sites $site] < 0} {
+            lappend sites $site
+        }
+    }
+    return $sites
+}
+
+proc get_macro_sites_from_lefs {lef_files} {
+    set sites [list]
+    foreach lef $lef_files {
+        if {[catch {set fp [open $lef r]}]} {
+            continue
+        }
+        while {[gets $fp line] >= 0} {
+            if {[regexp {^[ \t]*SITE[ \t]+([^ \t;]+)[ \t]*;} $line -> site] &&
+                [lsearch -exact $sites $site] < 0} {
+                lappend sites $site
+            }
+        }
+        close $fp
+    }
+    return $sites
+}
+
+proc resolve_floorplan_site {configured_site lef_files} {
+    set available_sites [get_available_sites]
+    puts "Innovus available placement sites: $available_sites"
+
+    if {$configured_site ne "" &&
+        [lsearch -exact $available_sites $configured_site] >= 0} {
+        return $configured_site
+    }
+
+    if {$configured_site ne ""} {
+        puts "Configured SITE '$configured_site' was not found in the loaded LEFs."
+    }
+
+    set macro_sites [get_macro_sites_from_lefs $lef_files]
+    puts "Standard-cell macro SITE candidates from LEF: $macro_sites"
+    foreach site $macro_sites {
+        if {[lsearch -exact $available_sites $site] >= 0} {
+            puts "Using floorplan SITE '$site' from the standard-cell LEF."
+            return $site
+        }
+    }
+
+    foreach site $available_sites {
+        puts "Using first available floorplan SITE '$site'."
+        return $site
+    }
+
+    puts stderr "No placement SITE was found after init_design. Check the loaded technology and standard-cell LEFs."
+    exit 1
+}
+
+set FLOORPLAN_SITE [resolve_floorplan_site $SITE $lefs]
 setFPlanMode -snapBlockGrid LayerTrack
-floorPlan -site $SITE -r 1.0 $FP_UTIL $FP_MARGIN $FP_MARGIN $FP_MARGIN $FP_MARGIN
+floorPlan -site $FLOORPLAN_SITE -r 1.0 $FP_UTIL $FP_MARGIN $FP_MARGIN $FP_MARGIN $FP_MARGIN
 
 setDesignMode -topRoutingLayer $TOP_ROUTING_LAYER
 setDesignMode -bottomRoutingLayer 2
