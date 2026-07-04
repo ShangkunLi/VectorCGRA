@@ -21,6 +21,18 @@ is_tech_lef() {
     ! grep -Eiq '^[[:space:]]*MACRO[[:space:]]+' "$file"
 }
 
+score_tech_lef() {
+  local file="${1,,}"
+  local stack="${ROUTING_STACK,,}"
+  local score=0
+  [[ "$file" == *"$stack"* ]] && score=$((score + 100))
+  [[ "$file" == *"9m"* ]] && score=$((score + 20))
+  [[ "$file" == *"innovus"* ]] && score=$((score + 10))
+  [[ "$file" == *"cadence"* ]] && score=$((score + 5))
+  [[ "$file" == *"lefheader"* ]] && score=$((score + 3))
+  echo "$score"
+}
+
 echo "Technology LEF candidates:"
 tech_candidates=()
 while IFS= read -r file; do
@@ -35,6 +47,16 @@ done < <(find "$TECH_ROOT" -type f \( \
   -iname '*tech.lef' -o \
   -iname '*technology*.lef' \
 \) | sort)
+
+best_tech=""
+best_score=-1
+for file in "${tech_candidates[@]}"; do
+  score="$(score_tech_lef "$file")"
+  if (( score > best_score )); then
+    best_score="$score"
+    best_tech="$file"
+  fi
+done
 
 echo
 echo "LVT standard-cell LEF candidates:"
@@ -58,9 +80,9 @@ done < <(find "$TECH_ROOT" -type f \( \
 
 echo
 echo "Suggested flow_config.tcl snippet:"
-if [[ ${#tech_candidates[@]} -gt 0 ]]; then
+if [[ -n "$best_tech" ]]; then
   echo "set INNOVUS_TECH_LEF_FILES [list \\"
-  echo "    \"${tech_candidates[0]}\" \\"
+  echo "    \"$best_tech\" \\"
   echo "]"
 else
   echo "# No technology LEF candidate found automatically."

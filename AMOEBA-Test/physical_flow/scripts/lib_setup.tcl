@@ -73,6 +73,47 @@ proc filter_technology_lefs {lef_files} {
     return [lsort $tech_lefs]
 }
 
+proc choose_one_technology_lef {tech_lefs} {
+    global TSMC22_ROUTING_STACK
+
+    if {[llength $tech_lefs] == 0} {
+        return [list]
+    }
+
+    # A routing-stack LEF/header defines routing layers and vias. Loading more
+    # than one such file causes duplicate VIA definitions, and layers defined
+    # after the first technology LEF are ignored by Innovus.
+    set best_path ""
+    set best_score -1
+    foreach lef $tech_lefs {
+        set score 0
+        if {[info exists TSMC22_ROUTING_STACK] &&
+            $TSMC22_ROUTING_STACK ne "" &&
+            [path_contains $lef $TSMC22_ROUTING_STACK]} {
+            incr score 100
+        }
+        if {[path_contains $lef "9m"]} {
+            incr score 20
+        }
+        if {[path_contains $lef "innovus"]} {
+            incr score 10
+        }
+        if {[path_contains $lef "cadence"]} {
+            incr score 5
+        }
+        if {[path_contains $lef "lefheader"]} {
+            incr score 3
+        }
+        if {$score > $best_score || ($score == $best_score &&
+                                     ($best_path eq "" ||
+                                      [string compare $lef $best_path] < 0))} {
+            set best_score $score
+            set best_path $lef
+        }
+    }
+    return [list $best_path]
+}
+
 set std_cell_root "${TECH_ROOT}/SC/${TSMC22_STD_CELL}"
 set std_cell_search_root $TECH_ROOT
 if {[file exists $std_cell_root]} {
@@ -114,11 +155,11 @@ proc discover_innovus_tech_lefs {} {
             }
         }
         if {[llength $stack_matches] > 0} {
-            return [lsort $stack_matches]
+            return [choose_one_technology_lef [lsort $stack_matches]]
         }
     }
 
-    return $tech_lefs
+    return [choose_one_technology_lef $tech_lefs]
 }
 
 proc discover_innovus_cell_lefs {} {
@@ -161,6 +202,18 @@ if {[llength $INNOVUS_LEF_FILES] > 0} {
     if {[info exists INNOVUS_TECH_LEF_FILES] &&
         [llength $INNOVUS_TECH_LEF_FILES] > 0} {
         set tech_lefs $INNOVUS_TECH_LEF_FILES
+        if {[llength $tech_lefs] > 1} {
+            puts stderr "INNOVUS_TECH_LEF_FILES contains multiple technology LEFs."
+            puts stderr "Innovus must load exactly one technology LEF/header first;"
+            puts stderr "otherwise VIA definitions are duplicated and later routing"
+            puts stderr "layers are ignored. Keep only the one matching routing stack"
+            puts stderr "$TSMC22_ROUTING_STACK."
+            puts stderr "Current list:"
+            foreach lef $tech_lefs {
+                puts stderr "  $lef"
+            }
+            exit 1
+        }
     } else {
         set tech_lefs [discover_innovus_tech_lefs]
     }
