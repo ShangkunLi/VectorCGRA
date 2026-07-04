@@ -25,6 +25,12 @@ macro, check `scripts/flow_config.tcl`: the technology LEF must be listed in
 `INNOVUS_CELL_LEF_FILES`. Leaving both lists empty asks the shared setup script
 to discover and order them automatically.
 
+To inspect the VDI PDK and print a config snippet:
+
+```bash
+bash scripts/find_innovus_tech_files.sh
+```
+
 Useful outputs:
 
 ```text

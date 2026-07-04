@@ -11,13 +11,21 @@ proc find_files_recursive {root pattern} {
     if {![file exists $root]} {
         return $files
     }
-    if {[catch {exec find $root -type f -name $pattern} found]} {
+    if {[catch {exec find $root -type f -iname $pattern} found]} {
         return $files
     }
     foreach path [split $found "\n"] {
         if {$path ne ""} {
             lappend files $path
         }
+    }
+    return $files
+}
+
+proc find_lef_like_files_recursive {root} {
+    set files [list]
+    foreach pattern [list "*.lef" "*.tlef" "*techlef*" "*tech.lef" "*technology*.lef"] {
+        append_unique files [find_files_recursive $root $pattern]
     }
     return $files
 }
@@ -92,7 +100,7 @@ proc discover_innovus_tech_lefs {} {
 
     set candidates [list]
     foreach root $roots {
-        append_unique candidates [find_files_recursive $root "*.lef"]
+        append_unique candidates [find_lef_like_files_recursive $root]
     }
     set tech_lefs [filter_technology_lefs $candidates]
 
@@ -181,10 +189,20 @@ if {[llength $lib_files] == 0} {
     exit 1
 }
 if {[llength $lef_files] == 0} {
-    puts stderr "No Innovus .lef files found. Edit TECH_ROOT or INNOVUS_LEF_FILES in scripts/flow_config.tcl."
+    puts stderr "No Innovus LEF files found. Edit TECH_ROOT or INNOVUS_LEF_FILES in scripts/flow_config.tcl."
     exit 1
 }
 if {![is_technology_lef [lindex $lef_files 0]]} {
+    if {[llength $INNOVUS_LEF_FILES] == 0 &&
+        (![info exists INNOVUS_TECH_LEF_FILES] ||
+         [llength $INNOVUS_TECH_LEF_FILES] == 0)} {
+        puts stderr "No technology LEF was auto-discovered under TECH_ROOT:"
+        puts stderr "  $TECH_ROOT"
+        puts stderr "Run this helper on the VDI to find candidate files:"
+        puts stderr "  ./scripts/find_innovus_tech_files.sh"
+        puts stderr "Then set INNOVUS_TECH_LEF_FILES and INNOVUS_CELL_LEF_FILES in scripts/flow_config.tcl."
+        puts stderr ""
+    }
     puts stderr "The first Innovus LEF is not a technology LEF:"
     puts stderr "  [lindex $lef_files 0]"
     puts stderr "Put a technology LEF first via INNOVUS_TECH_LEF_FILES or an ordered INNOVUS_LEF_FILES list."
