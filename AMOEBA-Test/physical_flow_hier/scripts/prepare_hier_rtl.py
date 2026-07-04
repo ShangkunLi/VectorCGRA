@@ -7,8 +7,6 @@ copy of the top RTL with that one core module definition removed. The top-level
 DC run then resolves the core instance from the pre-synthesized core DDC.
 """
 
-from __future__ import annotations
-
 import argparse
 import re
 from pathlib import Path
@@ -17,7 +15,7 @@ from pathlib import Path
 MODULE_RE = re.compile(r"^module\s+([A-Za-z_][A-Za-z0-9_\$]*)\b", re.MULTILINE)
 
 
-def find_core_module(rtl_text: str) -> str:
+def find_core_module(rtl_text):
     modules = MODULE_RE.findall(rtl_text)
     core_modules = [name for name in modules if name.startswith("CgraWithLoopControllerRTL__")]
     if len(core_modules) != 1:
@@ -28,9 +26,9 @@ def find_core_module(rtl_text: str) -> str:
     return core_modules[0]
 
 
-def remove_module_definition(rtl_text: str, module_name: str) -> str:
+def remove_module_definition(rtl_text, module_name):
     lines = rtl_text.splitlines(keepends=True)
-    out: list[str] = []
+    out = []
     skipping = False
     removed = False
 
@@ -55,7 +53,7 @@ def remove_module_definition(rtl_text: str, module_name: str) -> str:
     return "".join(out)
 
 
-def main() -> None:
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--rtl", required=True, type=Path)
     parser.add_argument("--work-dir", required=True, type=Path)

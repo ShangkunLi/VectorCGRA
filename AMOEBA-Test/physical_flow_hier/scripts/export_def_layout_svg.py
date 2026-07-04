@@ -7,31 +7,16 @@ density, and hierarchy boxes for repeated AMOEBA CGRA cores. The source DEF
 remains the authoritative physical database handoff.
 """
 
-from __future__ import annotations
-
 import argparse
 import html
 import math
 import re
-from collections import defaultdict
-from dataclasses import dataclass
+from collections import defaultdict, namedtuple
 from pathlib import Path
 
 
-@dataclass(frozen=True)
-class Component:
-    name: str
-    master: str
-    x: int
-    y: int
-    orient: str
-
-
-@dataclass(frozen=True)
-class DefLayout:
-    units: int
-    die: tuple[int, int, int, int]
-    components: list[Component]
+Component = namedtuple("Component", ["name", "master", "x", "y", "orient"])
+DefLayout = namedtuple("DefLayout", ["units", "die", "components"])
 
 
 UNITS_RE = re.compile(r"UNITS\s+DISTANCE\s+MICRONS\s+(\d+)\s*;", re.IGNORECASE)
@@ -64,7 +49,7 @@ PALETTE = {
 }
 
 
-def parse_def(path: Path) -> DefLayout:
+def parse_def(path):
     text = path.read_text(errors="ignore")
     units_match = UNITS_RE.search(text)
     units = int(units_match.group(1)) if units_match else 1000
@@ -76,7 +61,7 @@ def parse_def(path: Path) -> DefLayout:
         die = (0, 0, 1, 1)
 
     section_match = COMPONENT_SECTION_RE.search(text)
-    components: list[Component] = []
+    components = []
     if section_match:
         body = section_match.group("body")
         for statement in body.split(";"):
@@ -104,7 +89,7 @@ def parse_def(path: Path) -> DefLayout:
     return DefLayout(units=units, die=die, components=components)
 
 
-def classify(component: Component) -> str:
+def classify(component):
     name = component.name.lower()
     master = component.master.lower()
     if CGRA_RE.search(name):
@@ -120,26 +105,28 @@ def classify(component: Component) -> str:
     return "other"
 
 
-def cgra_id(component: Component) -> int | None:
+def cgra_id(component):
     match = CGRA_RE.search(component.name)
     return int(match.group(1)) if match else None
 
 
-def svg_rect(x: float, y: float, w: float, h: float, **attrs: object) -> str:
+def svg_rect(x, y, w, h, **attrs):
     parts = [f'x="{x:.3f}"', f'y="{y:.3f}"', f'width="{w:.3f}"', f'height="{h:.3f}"']
     for key, value in attrs.items():
-        parts.append(f'{key.replace("_", "-")}="{value}"')
+        attr_name = key[:-1] if key.endswith("_") else key
+        parts.append(f'{attr_name.replace("_", "-")}="{value}"')
     return f"<rect {' '.join(parts)} />"
 
 
-def svg_text(x: float, y: float, text: str, **attrs: object) -> str:
+def svg_text(x, y, text, **attrs):
     parts = [f'x="{x:.3f}"', f'y="{y:.3f}"']
     for key, value in attrs.items():
-        parts.append(f'{key.replace("_", "-")}="{value}"')
+        attr_name = key[:-1] if key.endswith("_") else key
+        parts.append(f'{attr_name.replace("_", "-")}="{value}"')
     return f"<text {' '.join(parts)}>{html.escape(text)}</text>"
 
 
-def export_svg(layout: DefLayout, output: Path, title: str, max_bins: int) -> None:
+def export_svg(layout, output, title, max_bins):
     x0, y0, x1, y1 = layout.die
     die_w = max(1, x1 - x0)
     die_h = max(1, y1 - y0)
@@ -151,10 +138,10 @@ def export_svg(layout: DefLayout, output: Path, title: str, max_bins: int) -> No
     page_h = layout_h + margin_t + margin_b
     scale = layout_w / die_w
 
-    def sx(x: float) -> float:
+    def sx(x):
         return margin_l + (x - x0) * scale
 
-    def sy(y: float) -> float:
+    def sy(y):
         return margin_t + (y1 - y) * scale
 
     bin_count_x = max(12, min(max_bins, int(math.sqrt(len(layout.components))) * 2))
@@ -162,7 +149,7 @@ def export_svg(layout: DefLayout, output: Path, title: str, max_bins: int) -> No
     bin_w = die_w / bin_count_x
     bin_h = die_h / bin_count_y
 
-    bins: dict[tuple[int, int, str], int] = defaultdict(int)
+    bins = defaultdict(int)
     max_count = 1
     for component in layout.components:
         bx = min(bin_count_x - 1, max(0, int((component.x - x0) / bin_w)))
@@ -171,7 +158,7 @@ def export_svg(layout: DefLayout, output: Path, title: str, max_bins: int) -> No
         bins[key] += 1
         max_count = max(max_count, bins[key])
 
-    cgra_groups: dict[int, list[Component]] = defaultdict(list)
+    cgra_groups = defaultdict(list)
     for component in layout.components:
         cid = cgra_id(component)
         if cid is not None:
@@ -266,7 +253,7 @@ def export_svg(layout: DefLayout, output: Path, title: str, max_bins: int) -> No
     output.write_text("\n".join(lines) + "\n")
 
 
-def main() -> None:
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--def-file", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
