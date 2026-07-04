@@ -16,7 +16,7 @@ set RESET_PORT "reset"
 set CLK_PERIOD_PS 1428.571
 
 set DC_CORES 16
-set INNOVUS_CPUS 8
+set INNOVUS_CPUS 16
 
 set WORK_DIR "./work"
 set REPORT_DIR "./reports"
