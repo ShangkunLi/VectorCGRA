@@ -133,6 +133,40 @@ proc is_technology_lef {path} {
     return 0
 }
 
+proc lef_routing_layers {path} {
+    set layers [list]
+    if {[catch {set fp [open $path r]}]} {
+        return $layers
+    }
+
+    set in_layer 0
+    set current_layer ""
+    set layer_text ""
+    while {[gets $fp line] >= 0} {
+        if {!$in_layer &&
+            [regexp -nocase {^[ \t]*LAYER[ \t]+([^ \t;]+)} $line -> layer]} {
+            set in_layer 1
+            set current_layer $layer
+            set layer_text "$line\n"
+            continue
+        }
+
+        if {$in_layer} {
+            append layer_text "$line\n"
+            if {[regexp -nocase {^[ \t]*END[ \t]+} $line]} {
+                if {[regexp -nocase {TYPE[ \t]+ROUTING[ \t]*;} $layer_text]} {
+                    lappend layers $current_layer
+                }
+                set in_layer 0
+                set current_layer ""
+                set layer_text ""
+            }
+        }
+    }
+    close $fp
+    return $layers
+}
+
 proc filter_technology_lefs {lef_files} {
     set tech_lefs [list]
     foreach lef $lef_files {
@@ -144,7 +178,7 @@ proc filter_technology_lefs {lef_files} {
 }
 
 proc choose_one_technology_lef {tech_lefs} {
-    global TSMC22_ROUTING_STACK
+    global TSMC22_TECH_LEF_TOKENS TSMC22_EXPECTED_ROUTING_LAYER_COUNT
 
     if {[llength $tech_lefs] == 0} {
         return [list]
@@ -156,23 +190,26 @@ proc choose_one_technology_lef {tech_lefs} {
     set best_path ""
     set best_score -1
     foreach lef $tech_lefs {
+        set routing_layers [lef_routing_layers $lef]
+        if {[info exists TSMC22_EXPECTED_ROUTING_LAYER_COUNT] &&
+            $TSMC22_EXPECTED_ROUTING_LAYER_COUNT > 0 &&
+            [llength $routing_layers] != $TSMC22_EXPECTED_ROUTING_LAYER_COUNT} {
+            continue
+        }
+
         set score 0
-        if {[info exists TSMC22_ROUTING_STACK] &&
-            $TSMC22_ROUTING_STACK ne "" &&
-            [path_contains $lef $TSMC22_ROUTING_STACK]} {
-            incr score 100
+        if {[info exists TSMC22_TECH_LEF_TOKENS]} {
+            foreach token $TSMC22_TECH_LEF_TOKENS {
+                if {[path_contains $lef $token]} {
+                    incr score 50
+                }
+            }
         }
-        if {[path_contains $lef "9m"]} {
-            incr score 20
-        }
-        if {[path_contains $lef "innovus"]} {
-            incr score 10
-        }
-        if {[path_contains $lef "cadence"]} {
-            incr score 5
-        }
-        if {[path_contains $lef "lefheader"]} {
-            incr score 3
+        if {[path_contains $lef "innovus"]} { incr score 10 }
+        if {[path_contains $lef "cadence"]} { incr score 5 }
+        if {[path_contains $lef "lefheader"]} { incr score 5 }
+        if {[path_contains $lef "hv"] || [path_contains $lef "hvh"]} {
+            incr score 2
         }
         if {$score > $best_score || ($score == $best_score &&
                                      ($best_path eq "" ||
@@ -180,6 +217,40 @@ proc choose_one_technology_lef {tech_lefs} {
             set best_score $score
             set best_path $lef
         }
+    }
+    return [list $best_path]
+}
+
+proc choose_one_stdcell_lef {candidates} {
+    global TSMC22_STD_CELL
+
+    set best_path ""
+    set best_score -1
+    foreach lef $candidates {
+        if {[is_technology_lef $lef]} {
+            continue
+        }
+        if {![path_contains $lef $TSMC22_STD_CELL]} {
+            continue
+        }
+
+        set score 0
+        if {[path_contains $lef "/back_end/lef/"]} { incr score 30 }
+        if {[path_contains $lef "/lef/"]} { incr score 10 }
+        if {[string equal -nocase [file tail $lef] "${TSMC22_STD_CELL}.lef"]} {
+            incr score 50
+        }
+
+        if {$score > $best_score ||
+            ($score == $best_score &&
+             ($best_path eq "" || [string compare $lef $best_path] < 0))} {
+            set best_score $score
+            set best_path $lef
+        }
+    }
+
+    if {$best_path eq ""} {
+        return [list]
     }
     return [list $best_path]
 }
@@ -200,65 +271,32 @@ proc discover_innovus_lib_files {} {
 }
 
 proc discover_innovus_tech_lefs {} {
-    global TECH_ROOT TSMC22_STD_CELL TSMC22_ROUTING_STACK
+    global TECH_ROOT
 
     set roots [list \
-        "${TECH_ROOT}/SC/${TSMC22_STD_CELL}" \
+        "${TECH_ROOT}/APR_Tech/Cadence" \
+        "${TECH_ROOT}/Back_End" \
         "${TECH_ROOT}/SC" \
         "${TECH_ROOT}/PDK" \
-        "${TECH_ROOT}/Back_End" \
-        "${TECH_ROOT}" \
     ]
 
     set candidates [list]
     foreach root $roots {
-        append_unique candidates [find_lef_like_files_recursive $root]
+        append_unique candidates [find_files_recursive $root "*.tlef"]
+        append_unique candidates [find_files_recursive $root "*.lef"]
     }
-    set tech_lefs [filter_technology_lefs $candidates]
-
-    # Prefer the same routing stack as the QRC file when multiple technology
-    # LEFs exist in the PDK. The default TSMC22 ULL setup uses 5x2z.
-    if {[info exists TSMC22_ROUTING_STACK] && $TSMC22_ROUTING_STACK ne ""} {
-        set stack_matches [list]
-        foreach lef $tech_lefs {
-            if {[path_contains $lef $TSMC22_ROUTING_STACK]} {
-                lappend stack_matches $lef
-            }
-        }
-        if {[llength $stack_matches] > 0} {
-            return [choose_one_technology_lef [lsort $stack_matches]]
-        }
-    }
-
-    return [choose_one_technology_lef $tech_lefs]
+    return [choose_one_technology_lef [filter_technology_lefs $candidates]]
 }
 
 proc discover_innovus_cell_lefs {} {
-    global std_cell_root std_cell_search_root TSMC22_STD_CELL
+    global TECH_ROOT TSMC22_STD_CELL
 
-    set roots [list]
-    if {[file exists $std_cell_root]} {
-        lappend roots $std_cell_root
-    } else {
-        lappend roots $std_cell_search_root
-    }
-
+    set roots [list "${TECH_ROOT}/SC/${TSMC22_STD_CELL}"]
     set candidates [list]
     foreach root $roots {
         append_unique candidates [find_files_recursive $root "*.lef"]
     }
-
-    set cell_lefs [list]
-    foreach lef $candidates {
-        if {[is_technology_lef $lef]} {
-            continue
-        }
-        if {![path_contains $lef $TSMC22_STD_CELL]} {
-            continue
-        }
-        lappend cell_lefs $lef
-    }
-    return [lsort $cell_lefs]
+    return [choose_one_stdcell_lef $candidates]
 }
 
 if {[llength $INNOVUS_LIB_FILES] > 0} {
@@ -357,6 +395,23 @@ if {$qrc_file eq ""} {
     puts stderr "  find $TECH_ROOT -type f \\( -name '*.tch' -o -iname '*qrc*' -o -name '*.ict' \\)"
     exit 1
 }
+if {![file exists $qrc_file]} {
+    puts stderr "Innovus QRC file does not exist: $qrc_file"
+    exit 1
+}
+
+set tech_routing_layers [lef_routing_layers [lindex $lef_files 0]]
+if {[info exists TSMC22_EXPECTED_ROUTING_LAYER_COUNT] &&
+    $TSMC22_EXPECTED_ROUTING_LAYER_COUNT > 0 &&
+    [llength $tech_routing_layers] != $TSMC22_EXPECTED_ROUTING_LAYER_COUNT} {
+    puts stderr "Technology LEF/QRC stack mismatch before init_design."
+    puts stderr "  Technology LEF: [lindex $lef_files 0]"
+    puts stderr "  Routing layers: $tech_routing_layers"
+    puts stderr "  Expected routing layer count: $TSMC22_EXPECTED_ROUTING_LAYER_COUNT"
+    puts stderr "  QRC file: $qrc_file"
+    puts stderr "Use a tech LEF from the same 1P8M/5x2z stack as the QRC file."
+    exit 1
+}
 
 set init_lib_search_path [list]
 foreach lib $lib_files {
@@ -382,3 +437,4 @@ foreach lef $lef_files {
 }
 puts "Innovus QRC file:"
 puts "  $qrc_file"
+puts "Technology LEF routing layers: $tech_routing_layers"

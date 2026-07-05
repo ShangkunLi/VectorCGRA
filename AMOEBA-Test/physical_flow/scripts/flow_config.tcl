@@ -11,11 +11,15 @@ set RTL_FILE "../generated/AmoebaMultiCgra4x4Cgra2x2RTL.v"
 set CLK_PORT "clk"
 set RESET_PORT "reset"
 
-# 800 MHz = 1.25 ns = 1250 ps.
-set CLK_PERIOD_PS 1250
+# 700 MHz = 1.428571 ns = 1428.571 ps.
+set CLK_PERIOD_PS 1428.571
 
 set DC_CORES 16
-set INNOVUS_CPUS 16
+
+# The current ELEC6910 Innovus license reports 8 allowed CPU jobs. Keeping this
+# at the licensed limit avoids noisy tool-side capping while matching the
+# reference physical flow.
+set INNOVUS_CPUS 8
 
 set HANDOFF_DIR "./syn_handoff"
 set NETLIST "${HANDOFF_DIR}/${DESIGN}.v"
@@ -40,8 +44,10 @@ set INNOVUS_LIB_FILES [list]
 set INNOVUS_LEF_FILES [list]
 set INNOVUS_TECH_LEF_FILES [list]
 set INNOVUS_CELL_LEF_FILES [list]
-set INNOVUS_QRC_FILE ""
+set INNOVUS_QRC_FILE "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL/RC_Extraction/Cadence/RC_QRC_cln22ulp_1p8m_5x2z_ut-alrdl_9corners_shrink_1.0p1a/RC_QRC_cln22ulp_1p08m+ut-alrdl_5x2z_typical/qrcTechFile"
 set TSMC22_ROUTING_STACK "5x2z"
+set TSMC22_TECH_LEF_TOKENS [list "8M" "5X2Z"]
+set TSMC22_EXPECTED_ROUTING_LAYER_COUNT 9
 
 # Preferred placement row site. If this site is unavailable after init_design,
 # run_innovus.tcl falls back to the SITE used by the loaded standard-cell LEF.
