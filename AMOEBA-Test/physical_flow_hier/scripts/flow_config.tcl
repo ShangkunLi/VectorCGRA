@@ -22,6 +22,11 @@ set DC_CORES 16
 # reference physical flow.
 set INNOVUS_CPUS 8
 
+# The top-level macro flow reuses a post-route CGRA core macro. Keep CTS
+# inside the core flow; otherwise Innovus tries to rebuild the internal core
+# clock tree from the top macro level.
+set TOP_MACRO_RUN_CTS 0
+
 set WORK_DIR "./work"
 set REPORT_DIR "./reports"
 set RESULT_DIR "./results"

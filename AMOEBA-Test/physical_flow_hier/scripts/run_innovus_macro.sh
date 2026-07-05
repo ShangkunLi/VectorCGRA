@@ -36,7 +36,13 @@ python3 scripts/write_blackbox_top_netlist.py \
   --output ./syn_handoff/amoeba_top_macro.v
 require_file ./syn_handoff/amoeba_top_macro.v "top macro netlist preparation"
 
-"${INNOVUS_BIN}" -64 -overwrite -log log/innovus_core.log -files scripts/run_core_innovus.tcl
+if [ -s ./block_handoff/amoeba_cgra_core.lef ] && \
+   [ -s ./block_handoff/amoeba_cgra_core.def ] && \
+   [ -s ./summaryReport/core/post_route.sum ]; then
+  echo "Reusing existing hardened core macro outputs."
+else
+  "${INNOVUS_BIN}" -64 -overwrite -log log/innovus_core.log -files scripts/run_core_innovus.tcl
+fi
 require_file ./block_handoff/amoeba_cgra_core.lef "core Innovus"
 require_file ./block_handoff/amoeba_cgra_core.def "core Innovus"
 require_file ./summaryReport/core/post_route.sum "core Innovus"

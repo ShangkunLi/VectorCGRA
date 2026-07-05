@@ -145,17 +145,21 @@ defOut -floorplan -placement ${defDir}/${DESIGN}_placed.def
 set rpt_pre_cts [extract_report preCTS]
 echo "$rpt_pre_cts" >> ${DESIGN}_MACRO_DETAILS.rpt
 
-create_ccopt_clock_tree_spec
-ccopt_design
+if {$TOP_MACRO_RUN_CTS} {
+    create_ccopt_clock_tree_spec
+    ccopt_design
 
-set_interactive_constraint_modes [all_constraint_modes -active]
-set_propagated_clock [all_clocks]
-set_clock_propagation propagated
-optDesign -postCTS
+    set_interactive_constraint_modes [all_constraint_modes -active]
+    set_propagated_clock [all_clocks]
+    set_clock_propagation propagated
+    optDesign -postCTS
 
+    set rpt_post_cts [extract_report postCTS]
+    echo "$rpt_post_cts" >> ${DESIGN}_MACRO_DETAILS.rpt
+} else {
+    puts "Skipping top macro CTS because the CGRA core macro is already post-CTS/post-route."
+}
 saveDesign ${encDir}/${DESIGN}_cts.enc
-set rpt_post_cts [extract_report postCTS]
-echo "$rpt_post_cts" >> ${DESIGN}_MACRO_DETAILS.rpt
 
 setNanoRouteMode -drouteVerboseViolationSummary 1
 setNanoRouteMode -routeWithSiDriven true
