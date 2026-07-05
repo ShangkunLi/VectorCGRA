@@ -57,6 +57,9 @@ globalNetConnect VSS -type tielo -inst * -override
 setOptMode -powerEffort low -leakageToDynamicRatio 0.5 \
     -fixCap true -fixTran true -fixFanoutLoad true
 
+setGenerateViaMode -auto true
+generateVias
+
 createBasicPathGroups -expanded
 
 proc get_available_sites {} {
@@ -158,11 +161,20 @@ setNanoRouteMode -drouteVerboseViolationSummary 1
 setNanoRouteMode -routeWithSiDriven true
 setNanoRouteMode -routeWithTimingDriven true
 setNanoRouteMode -routeUseAutoVia true
+setNanoRouteMode -routeWithViaInPin "1:1"
+setNanoRouteMode -routeWithViaOnlyForStandardCellPin "1:1"
+setNanoRouteMode -drouteOnGridOnly "via 1:1"
 setNanoRouteMode -drouteAutoStop false
+setNanoRouteMode -drouteExpAdvancedMarFix true
+setNanoRouteMode -routeExpAdvancedTechnology true
+setNanoRouteMode -grouteExpWithTimingDriven false
 
 routeDesign
 saveDesign ${encDir}/${DESIGN}_route.enc
 defOut -netlist -floorplan -routing ${defDir}/${DESIGN}_route.def
+
+setViaGenMode -reset
+catch {editPowerVia -top_layer M2 -bottom_layer M1 -orthogonal_only 0 -add_vias 1}
 
 verify_connectivity -error 0 -geom_connect -no_antenna
 verify_drc -limit 0

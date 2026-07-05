@@ -16,7 +16,11 @@ set RESET_PORT "reset"
 set CLK_PERIOD_PS 1428.571
 
 set DC_CORES 16
-set INNOVUS_CPUS 16
+
+# The current ELEC6910 Innovus license reports 8 allowed CPU jobs. Keeping this
+# at the licensed limit avoids noisy tool-side capping while matching the
+# reference physical flow.
+set INNOVUS_CPUS 8
 
 set WORK_DIR "./work"
 set REPORT_DIR "./reports"
@@ -46,16 +50,19 @@ set DC_DB_FILES [list \
     "${TSMC22_NLDM_DIR}/tcbn22ullbwp30p140lvtffg0p88v0c.db" \
 ]
 
-# Innovus technology files are discovered under TECH_ROOT by default. If the
-# automatic discovery picks the wrong files, replace the empty lists below with
-# explicit paths. INNOVUS_LEF_FILES is a complete ordered override; otherwise
-# the flow loads INNOVUS_TECH_LEF_FILES first and INNOVUS_CELL_LEF_FILES second.
+# Innovus technology files follow the reference flow style: one matched tuple of
+# timing library, technology LEF, standard-cell LEF, and QRC techfile. The QRC
+# below is the 1P8M/5x2z stack, so the technology LEF must expose exactly the
+# matching route stack. Mixing it with a 9M LEF produces NREX-94 during RC
+# extraction.
 set INNOVUS_LIB_FILES [list]
 set INNOVUS_LEF_FILES [list]
 set INNOVUS_TECH_LEF_FILES [list]
 set INNOVUS_CELL_LEF_FILES [list]
 set INNOVUS_QRC_FILE "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL/RC_Extraction/Cadence/RC_QRC_cln22ulp_1p8m_5x2z_ut-alrdl_9corners_shrink_1.0p1a/RC_QRC_cln22ulp_1p08m+ut-alrdl_5x2z_typical/qrcTechFile"
 set TSMC22_ROUTING_STACK "5x2z"
+set TSMC22_TECH_LEF_TOKENS [list "8M" "5X2Z"]
+set TSMC22_EXPECTED_ROUTING_LAYER_COUNT 9
 
 # Preferred placement row site. If this site is unavailable after init_design,
 # the Innovus scripts fall back to the SITE used by the loaded standard-cell LEF.
