@@ -118,6 +118,10 @@ set FLOORPLAN_SITE [resolve_floorplan_site $SITE $lefs]
 setFPlanMode -snapBlockGrid LayerTrack
 floorPlan -site $FLOORPLAN_SITE -r 1.0 $FP_UTIL $FP_MARGIN $FP_MARGIN $FP_MARGIN $FP_MARGIN
 
+if {[info exists CORE_GRID_ENABLE] && $CORE_GRID_ENABLE} {
+    source scripts/core_grid_constraints.tcl
+}
+
 setDesignMode -topRoutingLayer $TOP_ROUTING_LAYER
 setDesignMode -bottomRoutingLayer 2
 

@@ -48,6 +48,24 @@ set TSMC22_ROUTING_STACK "5x2z"
 set SITE "unit"
 
 set TOP_ROUTING_LAYER 9
-set FP_UTIL 0.55
-set FP_MARGIN 5
+set FP_UTIL 0.38
+set FP_MARGIN 3
 set PIN_SPREAD_FRACTION 0.98
+
+# Flat Innovus flow: keep the synthesized hierarchy visible, but guide the
+# physical placement into a regular 4x4 CGRA-core grid. Each logical core is a
+# 2x2 tile array; do not group by local tile__0..tile__3, because those names
+# repeat inside every core.
+set CORE_GRID_ENABLE 1
+set CORE_GRID_ROWS 4
+set CORE_GRID_COLS 4
+set CORE_GRID_MODE "fence"
+set CORE_GRID_CHANNEL 8.0
+
+# Soft boundary blockages make the exported layout visibly tiled while still
+# allowing the router to cross tile boundaries when needed.
+set CORE_GRID_BOUNDARY_PLACE_BLKG 1
+set CORE_GRID_BOUNDARY_PLACE_BLKG_WIDTH 4.0
+set CORE_GRID_BOUNDARY_ROUTE_BLKG 0
+set CORE_GRID_BOUNDARY_ROUTE_BLKG_WIDTH 2.0
+set CORE_GRID_BOUNDARY_ROUTE_LAYERS {M2 M3 M4}
