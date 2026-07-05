@@ -63,19 +63,34 @@ compile -map_effort medium -area_effort medium
 
 change_names -rules verilog -hierarchy
 
-proc write_area_report_for_pattern {pattern report_file} {
-    set cells [get_cells -hierarchical -quiet $pattern]
+proc write_optional_area_report {cells report_file label} {
+    set fp [open $report_file w]
     if {[sizeof_collection $cells] == 0} {
-        set fp [open $report_file w]
-        puts $fp "No cells matched pattern: $pattern"
+        puts $fp "No cells matched: $label"
         close $fp
         return
     }
-    report_area $cells -hierarchy > $report_file
+    close $fp
+
+    # Some DC versions reject collection-valued report_area redirection when
+    # -hierarchy is also present. Keep these reports best-effort: the full
+    # hierarchical report below is the authoritative area source, while these
+    # small filtered reports are only review aids.
+    if {[catch {report_area $cells > $report_file} msg]} {
+        set fp [open $report_file w]
+        puts $fp "report_area failed for: $label"
+        puts $fp $msg
+        close $fp
+    }
+}
+
+proc write_area_report_for_pattern {pattern report_file} {
+    set cells [get_cells -hierarchical -quiet $pattern]
+    write_optional_area_report $cells $report_file "pattern $pattern"
 }
 
 report_area -hierarchy > ${REPORT_DIR}/dc_area.rpt
-report_area $core_cells -hierarchy > ${REPORT_DIR}/dc_area_core_instances.rpt
+write_optional_area_report $core_cells ${REPORT_DIR}/dc_area_core_instances.rpt "instances of $CORE_MODULE"
 write_area_report_for_pattern "*cgra__*" ${REPORT_DIR}/dc_area_cgra_cells.rpt
 write_area_report_for_pattern "*routers*" ${REPORT_DIR}/dc_area_inter_core_noc.rpt
 report_timing -delay_type max -max_paths 50 > ${REPORT_DIR}/dc_timing.rpt
