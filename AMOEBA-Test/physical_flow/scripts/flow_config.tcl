@@ -58,11 +58,10 @@ set FP_UTIL 0.38
 set FP_MARGIN 3
 set PIN_SPREAD_FRACTION 0.98
 
-# Flat Innovus flow: keep the synthesized hierarchy visible, but guide the
-# physical placement into a regular 4x4 CGRA-core grid. Each logical core is a
-# 2x2 tile array; do not group by local tile__0..tile__3, because those names
-# repeat inside every core.
-set CORE_GRID_ENABLE 1
+# Fully flat Innovus flow by default. Set CORE_GRID_ENABLE to 1 only when
+# explicitly debugging a guided 4x4 CGRA-core grid layout; the guided mode is
+# much heavier because it groups millions of flat standard-cell instances.
+set CORE_GRID_ENABLE 0
 set CORE_GRID_ROWS 4
 set CORE_GRID_COLS 4
 set CORE_GRID_MODE "fence"
