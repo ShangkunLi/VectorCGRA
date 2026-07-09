@@ -12,6 +12,9 @@ source [file join $::AMOEBA_BASE_FLOW_DIR "scripts" "flow_config.tcl"]
 set DESIGN "amoeba_grid"
 set TOP_MODULE "AmoebaMultiCgra4x4Cgra2x2RTL"
 
+# Timing is inherited from ../physical_flow. That base flow must be rerun after
+# changing CLK_PERIOD_PS so this grid flow consumes a fresh 500 MHz SDC.
+
 # Reuse DC output from the existing physical_flow directory.
 set HANDOFF_DIR [file normalize [file join $::AMOEBA_BASE_FLOW_DIR "syn_handoff"]]
 set NETLIST [file join $HANDOFF_DIR "amoeba.v"]

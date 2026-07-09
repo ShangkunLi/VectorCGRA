@@ -11,8 +11,8 @@ set RTL_FILE "../generated/AmoebaMultiCgra4x4Cgra2x2RTL.v"
 set CLK_PORT "clk"
 set RESET_PORT "reset"
 
-# 700 MHz = 1.428571 ns = 1428.571 ps.
-set CLK_PERIOD_PS 1428.571
+# 500 MHz = 2.000 ns = 2000 ps.
+set CLK_PERIOD_PS 2000
 
 set DC_CORES 16
 

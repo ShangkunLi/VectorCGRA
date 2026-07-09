@@ -62,14 +62,14 @@ Otherwise source DC and Innovus manually according to the lab handout.
 Then check the configuration:
 
 ```bash
-cd /dfs/usrhome/slifd/VectorCGRA/AMOEBA-Test/physical_flow
+cd /dfs/usrhome/slifd/VectorCGRA/AMOEBA-Test/physical_flow_baseline
 vim scripts/flow_config.tcl
 ```
 
-The checked-in default targets the TSMC22 ULL library and 700 MHz:
+The checked-in default targets the TSMC22 ULL library and 500 MHz:
 
 ```tcl
-set CLK_PERIOD_PS 1250
+set CLK_PERIOD_PS 2000
 set TECH_ROOT "/usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL"
 set DC_DB_FILES [list \
     "${TSMC22_NLDM_DIR}/tcbn22ullbwp30p140lvtffg0p88v0c.db" \
@@ -92,7 +92,7 @@ reports/dc_area.rpt           DC area report
 reports/dc_timing.rpt         DC timing report
 reports/dc_power.rpt          DC power report
 summaryReport/post_route.sum  Innovus post-route summary
-amoeba_DETAILS.rpt            compact Innovus PPA table by stage
+baseline_DETAILS.rpt          compact Innovus PPA table by stage
 reports/innovus_area_breakdown.csv
                               top-level post-route physical area breakdown
 reports/innovus_tile_area_breakdown.csv
@@ -112,7 +112,7 @@ scripts/flow_config.tcl
 The current default is:
 
 ```text
-clock: 700 MHz, 1428.571 ps period
+clock: 500 MHz, 2000 ps period
 top:   BaselineMultiCgra4x4Cgra2x2RTL
 tech:  /usr/eelocal/tsmc_icdc/tsmc022/tsmc022_ULL
 DC db: tcbn22ullbwp30p140lvtffg0p88v0c.db
@@ -162,8 +162,8 @@ Do the same for `INNOVUS_LIB_FILES` only if automatic `.lib` discovery under
 Change the target frequency:
 
 ```tcl
-# 700 MHz
-set CLK_PERIOD_PS 1428.571
+# 500 MHz
+set CLK_PERIOD_PS 2000
 
 # 1 GHz
 set CLK_PERIOD_PS 1000

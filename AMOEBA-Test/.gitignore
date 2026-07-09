@@ -1,6 +1,3 @@
-# Generated RTL and physical-design handoff artifacts.
-generated/
-
 # Synopsys DC / Cadence Innovus outputs.
 physical_flow/log/
 physical_flow/reports/

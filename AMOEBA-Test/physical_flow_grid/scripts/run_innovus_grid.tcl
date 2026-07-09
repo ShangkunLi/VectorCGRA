@@ -22,6 +22,33 @@ proc amoeba_grid_require_file {path description} {
 amoeba_grid_require_file $NETLIST "DC handoff netlist"
 amoeba_grid_require_file $SDC_FILE "DC handoff SDC"
 
+proc amoeba_grid_require_sdc_clock_period {sdc_file expected_period_ps} {
+    set fp [open $sdc_file r]
+    set sdc_text [read $fp]
+    close $fp
+
+    set actual_period ""
+    foreach line [split $sdc_text "\n"] {
+        if {[regexp {^[ \t]*create_clock.*[ \t]-period[ \t]+([0-9.]+)} $line -> period]} {
+            set actual_period $period
+            break
+        }
+    }
+
+    if {$actual_period eq ""} {
+        puts stderr "Could not find create_clock -period in $sdc_file."
+        exit 1
+    }
+
+    set delta [expr {abs(double($actual_period) - double($expected_period_ps))}]
+    if {$delta > 0.001} {
+        puts stderr "DC handoff SDC clock period is ${actual_period} ps, expected ${expected_period_ps} ps. Run ../physical_flow/scripts/run_dc.sh first."
+        exit 1
+    }
+}
+
+amoeba_grid_require_sdc_clock_period $SDC_FILE $CLK_PERIOD_PS
+
 source [file join $::AMOEBA_BASE_SCRIPTS "mmmc_setup.tcl"]
 
 set rptDir "summaryReport"

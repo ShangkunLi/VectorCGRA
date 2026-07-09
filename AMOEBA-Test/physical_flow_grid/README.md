@@ -5,6 +5,10 @@ Innovus. It adds reference-style 4x4 placement constraints for the AMOEBA
 multi-CGRA cores, then exports paper-friendly layout images with a white grid
 overlay.
 
+The timing target is inherited from `../physical_flow`; the current shared
+target is 500 MHz, so rerun `../physical_flow/scripts/run_dc.sh` before this
+flow whenever `CLK_PERIOD_PS` changes.
+
 ## Inputs
 
 By default, the flow expects the existing DC outputs:
@@ -21,6 +25,9 @@ Edit `scripts/flow_config.tcl` if your handoff lives somewhere else.
 On the VDI, source the Cadence/TSMC environment first, then run:
 
 ```bash
+cd AMOEBA-Test/physical_flow
+./scripts/run_dc.sh
+
 cd AMOEBA-Test/physical_flow_grid
 ./scripts/run_innovus_grid.sh
 ```
