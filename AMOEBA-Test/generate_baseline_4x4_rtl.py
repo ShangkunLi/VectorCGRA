@@ -60,14 +60,14 @@ def parse_args():
     parser.add_argument("--multi-cgra-columns", type=int, default=4)
     parser.add_argument("--cgra-tile-rows", type=int, default=2)
     parser.add_argument("--cgra-tile-columns", type=int, default=2)
-    parser.add_argument("--ctrl-mem-size", type=int, default=20)
+    parser.add_argument("--ctrl-mem-size", type=int, default=12)
     parser.add_argument("--data-mem-size-per-bank", type=int, default=128)
     parser.add_argument("--num-banks-per-cgra", type=int, default=4)
     parser.add_argument("--num-registers-per-reg-bank", type=int, default=32)
     parser.add_argument(
         "--ctrl-steps-per-iter",
         type=int,
-        default=20,
+        default=12,
         help="Default dynamic control-memory count per iteration.",
     )
     parser.add_argument(
