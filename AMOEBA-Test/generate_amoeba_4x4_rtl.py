@@ -64,6 +64,28 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-banks-per-cgra", type=int, default=4)
     parser.add_argument("--num-registers-per-reg-bank", type=int, default=32)
     parser.add_argument(
+        "--num-ccus",
+        type=int,
+        default=4,
+        help="Number of loop-controller counter units per CGRA.",
+    )
+    parser.add_argument(
+        "--max-targets-per-ccu",
+        type=int,
+        default=4,
+        help="Maximum number of per-CCU update targets in the loop controller.",
+    )
+    parser.add_argument(
+        "--dcu-contexts",
+        type=int,
+        default=None,
+        help=(
+            "Physical loop-counter contexts per tile DCU. Defaults to "
+            "num_ccus + 1: one leaf-counter context plus one shadow context "
+            "per loop-controller CCU."
+        ),
+    )
+    parser.add_argument(
         "--ctrl-steps-per-iter",
         type=int,
         default=12,
@@ -86,7 +108,7 @@ def parse_args() -> argparse.Namespace:
 def build_dut(args: argparse.Namespace):
     add_vector_cgra_to_path(args.vector_cgra_root)
 
-    from pymtl3 import Component, InPort, OutPort, Wire, clog2, mk_bits, update
+    from pymtl3 import Component, InPort, OutPort, Wire, clog2, mk_bits, update, update_ff
     from pymtl3.passes.backends.verilog import VerilogPlaceholderPass
     from pymtl3.passes.backends.verilog.translation.VerilogTranslationPass import (
         VerilogTranslationPass,
@@ -101,7 +123,7 @@ def build_dut(args: argparse.Namespace):
     from VectorCGRA.fu.single.ExtractPredicateRTL import ExtractPredicateRTL
     from VectorCGRA.fu.single.GrantRTL import GrantRTL
     from VectorCGRA.fu.single.LogicRTL import LogicRTL
-    from VectorCGRA.fu.single.LoopCounterRTL import LoopCounterRTL
+    from VectorCGRA.fu.basic.Fu import Fu
     from VectorCGRA.fu.single.MemUnitRTL import MemUnitRTL
     from VectorCGRA.fu.single.MulRTL import MulRTL
     from VectorCGRA.fu.single.PhiRTL import PhiRTL
@@ -123,6 +145,11 @@ def build_dut(args: argparse.Namespace):
         CMD_LC_CONFIG_UPPER,
         CMD_LC_LAUNCH,
         CMD_LC_SYNC_VALUE,
+        CMD_CONFIG_LOOP_LOWER,
+        CMD_CONFIG_LOOP_STEP,
+        CMD_CONFIG_LOOP_UPPER,
+        CMD_RESET_LEAF_COUNTER,
+        CMD_UPDATE_COUNTER_SHADOW_VALUE,
         CMD_LEAF_COUNTER_COMPLETE,
     )
     from VectorCGRA.lib.messages import (
@@ -146,6 +173,7 @@ def build_dut(args: argparse.Namespace):
         PORT_INDEX_WEST,
     )
     from VectorCGRA.lib.util.data_struct_attr import kAttrCtrl, kAttrData, kAttrPayload
+    from VectorCGRA.lib.opt_type import OPT_LOOP_COUNT, OPT_LOOP_DELIVERY
     import VectorCGRA.mem.data.DataMemControllerRTL as data_mem_controller_module
     from VectorCGRA.mem.data.DataMemControllerRTL import DataMemControllerRTL
     import VectorCGRA.multi_cgra.MeshMultiCgraRTL as mesh_multi_cgra_module
@@ -154,6 +182,221 @@ def build_dut(args: argparse.Namespace):
         RingNetworkRTL,
     )
     from VectorCGRA.tile.TileRTL import TileRTL
+
+    dcu_contexts = args.dcu_contexts
+    if dcu_contexts is None:
+        dcu_contexts = args.num_ccus + 1
+    if dcu_contexts <= 0:
+        raise ValueError("--dcu-contexts must be positive")
+
+    class LimitedLoopCounterRTL(Fu):
+        def construct(
+            s,
+            CtrlPktType,
+            num_inports,
+            num_outports,
+            vector_factor_power=0,
+        ):
+            super(LimitedLoopCounterRTL, s).construct(
+                CtrlPktType,
+                num_inports,
+                num_outports,
+                1,
+                vector_factor_power,
+            )
+
+            ctrl_addr_slots = 2 ** s.CtrlAddrType.nbits
+            ContextIdxType = mk_bits(max(clog2(dcu_contexts), 1))
+
+            s.current_context = Wire(ContextIdxType)
+            s.target_context = Wire(ContextIdxType)
+
+            s.leaf_lower_bound = [Wire(s.DataType) for _ in range(dcu_contexts)]
+            s.leaf_upper_bound = [Wire(s.DataType) for _ in range(dcu_contexts)]
+            s.leaf_step = [Wire(s.DataType) for _ in range(dcu_contexts)]
+            s.leaf_current_value = [Wire(s.DataType) for _ in range(dcu_contexts)]
+            s.shadow_regs = [Wire(s.DataType) for _ in range(dcu_contexts)]
+            s.shadow_valid = [Wire(1) for _ in range(dcu_contexts)]
+            s.already_done = [Wire(1) for _ in range(dcu_contexts)]
+
+            s.loop_terminated = Wire(1)
+            s.cmd_reset_counter = Wire(1)
+            s.cmd_update_shadow = Wire(1)
+            s.cmd_config_lower = Wire(1)
+            s.cmd_config_upper = Wire(1)
+            s.cmd_config_step = Wire(1)
+            s.target_ctrl_data = Wire(s.DataType)
+
+            @update
+            def comb_logic():
+                for i in range(num_inports):
+                    s.recv_in[i].rdy @= 0
+                for i in range(num_outports):
+                    s.send_out[i].val @= 0
+                    s.send_out[i].msg @= s.DataType()
+
+                s.recv_const.rdy @= 0
+                s.recv_opt.rdy @= 0
+                s.send_to_ctrl_mem.val @= 0
+                s.send_to_ctrl_mem.msg @= s.CgraPayloadType(0, 0, 0, 0, 0)
+                s.recv_from_ctrl_mem.rdy @= 0
+
+                s.current_context @= ContextIdxType(0)
+                for addr in range(ctrl_addr_slots):
+                    if s.ctrl_addr_inport == s.CtrlAddrType(addr):
+                        s.current_context @= ContextIdxType(addr % dcu_contexts)
+
+                s.target_context @= ContextIdxType(0)
+                s.target_ctrl_data @= s.DataType(0, 0, 0, 0)
+
+                s.loop_terminated @= (
+                    s.leaf_current_value[s.current_context].payload
+                    >= s.leaf_upper_bound[s.current_context].payload
+                )
+
+                s.cmd_reset_counter @= 0
+                s.cmd_update_shadow @= 0
+                s.cmd_config_lower @= 0
+                s.cmd_config_upper @= 0
+                s.cmd_config_step @= 0
+
+                if s.recv_opt.val:
+                    if s.recv_opt.msg.operation == OPT_LOOP_COUNT:
+                        addr = s.current_context
+                        s.recv_const.rdy @= 0
+                        s.send_out[0].msg.payload @= (
+                            s.leaf_current_value[addr].payload
+                        )
+
+                        if s.loop_terminated:
+                            s.send_out[0].msg.predicate @= 0
+
+                            if ~s.already_done[addr]:
+                                s.send_to_ctrl_mem.val @= 1
+                                s.send_to_ctrl_mem.msg @= s.CgraPayloadType(
+                                    CMD_LEAF_COUNTER_COMPLETE,
+                                    s.DataType(0, 0, 0, 0),
+                                    0,
+                                    s.recv_opt.msg,
+                                    s.ctrl_addr_inport,
+                                )
+                                s.send_out[0].val @= 1
+                                s.recv_opt.rdy @= (
+                                    s.send_to_ctrl_mem.rdy & s.send_out[0].rdy
+                                )
+                            else:
+                                s.send_out[0].val @= 1
+                                s.recv_opt.rdy @= s.send_out[0].rdy
+                        else:
+                            s.send_out[0].msg.predicate @= 1
+                            s.send_out[0].val @= 1
+                            s.recv_opt.rdy @= s.send_out[0].rdy
+
+                    elif s.recv_opt.msg.operation == OPT_LOOP_DELIVERY:
+                        addr = s.current_context
+
+                        if s.shadow_valid[addr]:
+                            s.send_out[0].val @= 1
+                            s.send_out[0].msg @= s.shadow_regs[addr]
+                            s.recv_opt.rdy @= s.send_out[0].rdy
+                        else:
+                            s.send_out[0].val @= 0
+                            s.recv_opt.rdy @= 0
+
+                if s.recv_from_ctrl_mem.val:
+                    s.recv_from_ctrl_mem.rdy @= 1
+                    s.target_ctrl_data @= s.recv_from_ctrl_mem.msg.data
+
+                    for addr in range(ctrl_addr_slots):
+                        if s.recv_from_ctrl_mem.msg.ctrl_addr == s.CtrlAddrType(addr):
+                            s.target_context @= ContextIdxType(
+                                addr % dcu_contexts
+                            )
+
+                    if s.recv_from_ctrl_mem.msg.cmd == CMD_RESET_LEAF_COUNTER:
+                        s.cmd_reset_counter @= 1
+                    elif (
+                        s.recv_from_ctrl_mem.msg.cmd
+                        == CMD_UPDATE_COUNTER_SHADOW_VALUE
+                    ):
+                        s.cmd_update_shadow @= 1
+                    elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_LOWER:
+                        s.cmd_config_lower @= 1
+                    elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_UPPER:
+                        s.cmd_config_upper @= 1
+                    elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_STEP:
+                        s.cmd_config_step @= 1
+
+            @update_ff
+            def update_leaf_counters():
+                if s.reset | s.clear:
+                    for i in range(dcu_contexts):
+                        s.leaf_lower_bound[i] <<= s.DataType(0, 0, 0, 0)
+                        s.leaf_upper_bound[i] <<= s.DataType(0, 0, 0, 0)
+                        s.leaf_step[i] <<= s.DataType(0, 0, 0, 0)
+                        s.leaf_current_value[i] <<= s.DataType(0, 0, 0, 0)
+                else:
+                    if s.cmd_config_lower:
+                        s.leaf_lower_bound[s.target_context] <<= s.target_ctrl_data
+                        s.leaf_current_value[s.target_context] <<= s.target_ctrl_data
+
+                    if s.cmd_config_upper:
+                        s.leaf_upper_bound[s.target_context] <<= s.target_ctrl_data
+
+                    if s.cmd_config_step:
+                        s.leaf_step[s.target_context] <<= s.target_ctrl_data
+
+                    if (
+                        s.recv_opt.val
+                        & (s.recv_opt.msg.operation == OPT_LOOP_COUNT)
+                    ):
+                        addr = s.current_context
+                        if s.send_out[0].val & s.send_out[0].rdy & ~s.loop_terminated:
+                            s.leaf_current_value[addr] <<= s.DataType(
+                                s.leaf_current_value[addr].payload
+                                + s.leaf_step[addr].payload,
+                                1,
+                                0,
+                                0,
+                            )
+
+                    if s.cmd_reset_counter:
+                        s.leaf_current_value[s.target_context] <<= (
+                            s.leaf_lower_bound[s.target_context]
+                        )
+
+            @update_ff
+            def update_shadow_registers():
+                if s.reset | s.clear:
+                    for i in range(dcu_contexts):
+                        s.shadow_regs[i] <<= s.DataType(0, 0, 0, 0)
+                        s.shadow_valid[i] <<= 0
+                else:
+                    if s.cmd_update_shadow:
+                        s.shadow_regs[s.target_context] <<= s.target_ctrl_data
+                        s.shadow_valid[s.target_context] <<= 1
+
+            @update_ff
+            def update_already_done():
+                if s.reset | s.clear:
+                    for i in range(dcu_contexts):
+                        s.already_done[i] <<= 0
+                else:
+                    if (
+                        s.recv_opt.val
+                        & (s.recv_opt.msg.operation == OPT_LOOP_COUNT)
+                        & ~s.already_done[s.current_context]
+                        & s.loop_terminated
+                        & s.send_to_ctrl_mem.val
+                        & s.send_to_ctrl_mem.rdy
+                    ):
+                        s.already_done[s.current_context] <<= 1
+
+                    if s.cmd_reset_counter:
+                        s.already_done[s.target_context] <<= 0
+
+        def line_trace(s):
+            return f"[DCU|ctx={s.current_context}|done={s.already_done[s.current_context]}]"
 
     class LoopControllerWithRouteTargetsRTL(LoopControllerRTL):
         def construct(
@@ -360,8 +603,8 @@ def build_dut(args: argparse.Namespace):
             s.loop_controller = LoopControllerWithRouteTargetsRTL(
                 DataType,
                 CgraPayloadType.get_field_type(kAttrCtrl),
-                num_ccus=4,
-                max_targets_per_ccu=4,
+                num_ccus=args.num_ccus,
+                max_targets_per_ccu=args.max_targets_per_ccu,
                 data_mem_size=data_mem_size_global,
                 ctrl_mem_size=ctrl_mem_size,
                 num_tiles=s.num_tiles,
@@ -787,7 +1030,7 @@ def build_dut(args: argparse.Namespace):
         MemUnitRTL,
         SelRTL,
         RetRTL,
-        LoopCounterRTL,
+        LimitedLoopCounterRTL,
         ExtractPredicateRTL,
         SeqMulAdderRTL,
         VectorMulComboRTL,

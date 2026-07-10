@@ -5597,7 +5597,7 @@ module SpmBankPhysicalStubRTL__3f15d2341fbd9ca9
 );
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:212
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:455
   // @update
   // def respond_to_read_and_drop_write():
   //     s.recv_rd.rdy @= s.send.rdy
@@ -9139,7 +9139,7 @@ module LoopControllerWithRouteTargetsRTL__2cf784f6b796f202
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:188
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:431
   // @update
   // def expose_route_targets():
   //     active_ccu = s.active_dispatch_ccu
@@ -10976,11 +10976,11 @@ module AdderRTL__34612bfe96034fdc
 endmodule
 
 
-// PyMTL Component LoopCounterRTL Definition
-// Full name: LoopCounterRTL__CtrlPktType_IntraCgraPacket_16_4x4_4_8_2_CgraPayload__0df459b16ec21deb__num_inports_4__num_outports_2__vector_factor_power_0
-// At /home/lucas/Project/VectorCGRA/fu/single/LoopCounterRTL.py
+// PyMTL Component LimitedLoopCounterRTL Definition
+// Full name: LimitedLoopCounterRTL__CtrlPktType_IntraCgraPacket_16_4x4_4_8_2_CgraPayload__0df459b16ec21deb__num_inports_4__num_outports_2__vector_factor_power_0
+// At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py
 
-module LoopCounterRTL__34612bfe96034fdc
+module LimitedLoopCounterRTL__34612bfe96034fdc
 (
   input  logic [0:0] clear ,
   input  logic [0:0] clk ,
@@ -11022,141 +11022,145 @@ module LoopCounterRTL__34612bfe96034fdc
   localparam logic [0:0] __const__latency_at_proceed_latency  = 1'd1;
   localparam logic [2:0] __const__num_inports_at_comb_logic  = 3'd4;
   localparam logic [1:0] __const__num_outports_at_comb_logic  = 2'd2;
-  localparam logic [6:0] __const__OPT_LOOP_COUNT  = 7'd85;
-  localparam logic [4:0] __const__CMD_LEAF_COUNTER_COMPLETE  = 5'd31;
-  localparam logic [6:0] __const__OPT_LOOP_DELIVERY  = 7'd86;
-  localparam logic [4:0] __const__CMD_RESET_LEAF_COUNTER  = 5'd27;
-  localparam logic [4:0] __const__CMD_UPDATE_COUNTER_SHADOW_VALUE  = 5'd26;
-  localparam logic [4:0] __const__CMD_CONFIG_LOOP_LOWER  = 5'd28;
-  localparam logic [4:0] __const__CMD_CONFIG_LOOP_UPPER  = 5'd29;
-  localparam logic [4:0] __const__CMD_CONFIG_LOOP_STEP  = 5'd30;
-  localparam logic [4:0] __const__ctrl_mem_size_at_update_leaf_counters  = 5'd16;
-  localparam logic [4:0] __const__ctrl_mem_size_at_update_shadow_registers  = 5'd16;
-  localparam logic [4:0] __const__ctrl_mem_size_at_update_already_done  = 5'd16;
-  logic [0:0] already_done [0:15];
+  localparam logic [4:0] __const__ctrl_addr_slots_at_comb_logic  = 5'd16;
+  localparam logic [2:0] __const__dcu_contexts_at_comb_logic  = 3'd5;
+  localparam logic [6:0] __const__OPT_LOOP_COUNT_at_comb_logic  = 7'd85;
+  localparam logic [4:0] __const__CMD_LEAF_COUNTER_COMPLETE_at_comb_logic  = 5'd31;
+  localparam logic [6:0] __const__OPT_LOOP_DELIVERY_at_comb_logic  = 7'd86;
+  localparam logic [4:0] __const__CMD_RESET_LEAF_COUNTER_at_comb_logic  = 5'd27;
+  localparam logic [4:0] __const__CMD_UPDATE_COUNTER_SHADOW_VALUE_at_comb_logic  = 5'd26;
+  localparam logic [4:0] __const__CMD_CONFIG_LOOP_LOWER_at_comb_logic  = 5'd28;
+  localparam logic [4:0] __const__CMD_CONFIG_LOOP_UPPER_at_comb_logic  = 5'd29;
+  localparam logic [4:0] __const__CMD_CONFIG_LOOP_STEP_at_comb_logic  = 5'd30;
+  localparam logic [2:0] __const__dcu_contexts_at_update_leaf_counters  = 3'd5;
+  localparam logic [6:0] __const__OPT_LOOP_COUNT_at_update_leaf_counters  = 7'd85;
+  localparam logic [2:0] __const__dcu_contexts_at_update_shadow_registers  = 3'd5;
+  localparam logic [2:0] __const__dcu_contexts_at_update_already_done  = 3'd5;
+  localparam logic [6:0] __const__OPT_LOOP_COUNT_at_update_already_done  = 7'd85;
+  logic [0:0] already_done [0:4];
   logic [0:0] cmd_config_lower;
   logic [0:0] cmd_config_step;
   logic [0:0] cmd_config_upper;
   logic [0:0] cmd_reset_counter;
   logic [0:0] cmd_update_shadow;
-  logic [3:0] current_ctrl_addr;
+  logic [2:0] current_context;
   logic [0:0] latency;
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_current_value [0:15];
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_lower_bound [0:15];
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_step [0:15];
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_upper_bound [0:15];
+  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_current_value [0:4];
+  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_lower_bound [0:4];
+  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_step [0:4];
+  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 leaf_upper_bound [0:4];
   logic [0:0] loop_terminated;
   logic [0:0] reached_vector_factor;
-  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 shadow_regs [0:15];
-  logic [0:0] shadow_valid [0:15];
-  logic [3:0] target_ctrl_addr;
+  CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 shadow_regs [0:4];
+  logic [0:0] shadow_valid [0:4];
+  logic [2:0] target_context;
   CgraData_32_1_1_1__payload_32__predicate_1__bypass_1__delay_1 target_ctrl_data;
   logic [7:0] vector_factor_counter;
   logic [2:0] vector_factor_power;
-  logic [3:0] __tmpvar__comb_logic_addr;
-  logic [3:0] __tmpvar__update_leaf_counters_addr;
-  logic [3:0] __tmpvar__update_shadow_registers_addr;
-  logic [3:0] __tmpvar__update_already_done_addr;
+  logic [2:0] __tmpvar__comb_logic_addr;
+  logic [2:0] __tmpvar__update_leaf_counters_addr;
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/fu/single/LoopCounterRTL.py:76
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:230
   // @update
   // def comb_logic():
-  //   # Default values.
-  //   for i in range(num_inports):
-  //     s.recv_in[i].rdy @= b1(0)
-  //   for i in range(num_outports):
-  //     s.send_out[i].val @= b1(0)
-  //     s.send_out[i].msg @= s.DataType()
-  //   
-  //   s.recv_const.rdy @= b1(0)
-  //   s.recv_opt.rdy @= b1(0)
-  //   s.send_to_ctrl_mem.val @= b1(0)
-  //   s.send_to_ctrl_mem.msg @= s.CgraPayloadType(0, 0, 0, 0, 0)
-  //   s.recv_from_ctrl_mem.rdy @= b1(0)
-  //   
-  //   # Gets current ctrl_addr for operation.
-  //   s.current_ctrl_addr @= s.ctrl_addr_inport
-  //   s.loop_terminated @= (s.leaf_current_value[s.current_ctrl_addr].payload >= 
-  //                         s.leaf_upper_bound[s.current_ctrl_addr].payload)
-  //   
-  //   # CMD signal reset
-  //   s.cmd_reset_counter @= b1(0)
-  //   s.cmd_update_shadow @= b1(0)
-  //   s.cmd_config_lower @= b1(0)
-  //   s.cmd_config_upper @= b1(0)
-  //   s.cmd_config_step @= b1(0)
-  //   s.target_ctrl_addr @= s.CtrlAddrType(0)
-  //   s.target_ctrl_data @= s.DataType(0, 0, 0, 0)
-  //   
-  //   if s.recv_opt.val:
-  //     # ===== OPT_LOOP_COUNT: Loop-Driven Mode (Leaf Counter) =====
-  //     if s.recv_opt.msg.operation == OPT_LOOP_COUNT:
-  //       addr = s.current_ctrl_addr
-  //       
-  //       # Execution phase: output current counter value.
-  //       s.recv_const.rdy @= b1(0)
-  //       s.send_out[0].msg.payload @= s.leaf_current_value[addr].payload
-  //       
-  //       if s.loop_terminated:
-  //         # Loop terminated: predicate = 0.
-  //         s.send_out[0].msg.predicate @= 0
-  //         
-  //         # Sends CMD_LEAF_COUNTER_COMPLETE if not already done.
-  //         if ~s.already_done[addr]:
-  //           s.send_to_ctrl_mem.val @= b1(1)
-  //           s.send_to_ctrl_mem.msg @= s.CgraPayloadType(
-  //             CMD_LEAF_COUNTER_COMPLETE,
-  //             s.DataType(0, 0, 0, 0),
-  //             0,
-  //             s.recv_opt.msg,
-  //             addr
-  //           )
-  //           s.send_out[0].val @= b1(1)
-  //           s.recv_opt.rdy @= s.send_to_ctrl_mem.rdy & s.send_out[0].rdy
-  //         else:
-  //           # Already sent completion.
-  //           s.send_out[0].val @= b1(1)
-  //           s.recv_opt.rdy @= s.send_out[0].rdy
-  //       else:
-  //         # Valid iteration: predicate = 1.
-  //         s.send_out[0].msg.predicate @= 1
-  //         s.send_out[0].val @= b1(1)
-  //         s.recv_opt.rdy @= s.send_out[0].rdy
-  //     
-  //     # ===== OPT_LOOP_DELIVERY: Loop-Delivery Mode (Shadow Register) =====
-  //     elif s.recv_opt.msg.operation == OPT_LOOP_DELIVERY:
-  //       addr = s.current_ctrl_addr
-  //       
-  //       if s.shadow_valid[addr]:
-  //         s.send_out[0].val @= b1(1)
-  //         s.send_out[0].msg @= s.shadow_regs[addr]
-  //         s.recv_opt.rdy @= s.send_out[0].rdy
-  //       else:
-  //         # Shadow register not valid yet
-  //         s.send_out[0].val @= b1(0)
-  //         s.recv_opt.rdy @= b1(0)
-  //   
-  //   # ===== Handle messages from LC (CMD updates) =====
-  //   if s.recv_from_ctrl_mem.val:
-  //     s.recv_from_ctrl_mem.rdy @= b1(1)
-  //     s.target_ctrl_addr @= s.recv_from_ctrl_mem.msg.ctrl_addr
-  //     s.target_ctrl_data @= s.recv_from_ctrl_mem.msg.data
-  //     
-  //     if s.recv_from_ctrl_mem.msg.cmd == CMD_RESET_LEAF_COUNTER:
-  //       s.cmd_reset_counter @= b1(1)
-  //     
-  //     elif s.recv_from_ctrl_mem.msg.cmd == CMD_UPDATE_COUNTER_SHADOW_VALUE:
-  //       s.cmd_update_shadow @= b1(1)
-  //       
-  //     elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_LOWER:
-  //       s.cmd_config_lower @= b1(1)
-  //       
-  //     elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_UPPER:
-  //       s.cmd_config_upper @= b1(1)
-  //       
-  //     elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_STEP:
-  //       s.cmd_config_step @= b1(1)
+  //     for i in range(num_inports):
+  //         s.recv_in[i].rdy @= 0
+  //     for i in range(num_outports):
+  //         s.send_out[i].val @= 0
+  //         s.send_out[i].msg @= s.DataType()
+  // 
+  //     s.recv_const.rdy @= 0
+  //     s.recv_opt.rdy @= 0
+  //     s.send_to_ctrl_mem.val @= 0
+  //     s.send_to_ctrl_mem.msg @= s.CgraPayloadType(0, 0, 0, 0, 0)
+  //     s.recv_from_ctrl_mem.rdy @= 0
+  // 
+  //     s.current_context @= ContextIdxType(0)
+  //     for addr in range(ctrl_addr_slots):
+  //         if s.ctrl_addr_inport == s.CtrlAddrType(addr):
+  //             s.current_context @= ContextIdxType(addr % dcu_contexts)
+  // 
+  //     s.target_context @= ContextIdxType(0)
+  //     s.target_ctrl_data @= s.DataType(0, 0, 0, 0)
+  // 
+  //     s.loop_terminated @= (
+  //         s.leaf_current_value[s.current_context].payload
+  //         >= s.leaf_upper_bound[s.current_context].payload
+  //     )
+  // 
+  //     s.cmd_reset_counter @= 0
+  //     s.cmd_update_shadow @= 0
+  //     s.cmd_config_lower @= 0
+  //     s.cmd_config_upper @= 0
+  //     s.cmd_config_step @= 0
+  // 
+  //     if s.recv_opt.val:
+  //         if s.recv_opt.msg.operation == OPT_LOOP_COUNT:
+  //             addr = s.current_context
+  //             s.recv_const.rdy @= 0
+  //             s.send_out[0].msg.payload @= (
+  //                 s.leaf_current_value[addr].payload
+  //             )
+  // 
+  //             if s.loop_terminated:
+  //                 s.send_out[0].msg.predicate @= 0
+  // 
+  //                 if ~s.already_done[addr]:
+  //                     s.send_to_ctrl_mem.val @= 1
+  //                     s.send_to_ctrl_mem.msg @= s.CgraPayloadType(
+  //                         CMD_LEAF_COUNTER_COMPLETE,
+  //                         s.DataType(0, 0, 0, 0),
+  //                         0,
+  //                         s.recv_opt.msg,
+  //                         s.ctrl_addr_inport,
+  //                     )
+  //                     s.send_out[0].val @= 1
+  //                     s.recv_opt.rdy @= (
+  //                         s.send_to_ctrl_mem.rdy & s.send_out[0].rdy
+  //                     )
+  //                 else:
+  //                     s.send_out[0].val @= 1
+  //                     s.recv_opt.rdy @= s.send_out[0].rdy
+  //             else:
+  //                 s.send_out[0].msg.predicate @= 1
+  //                 s.send_out[0].val @= 1
+  //                 s.recv_opt.rdy @= s.send_out[0].rdy
+  // 
+  //         elif s.recv_opt.msg.operation == OPT_LOOP_DELIVERY:
+  //             addr = s.current_context
+  // 
+  //             if s.shadow_valid[addr]:
+  //                 s.send_out[0].val @= 1
+  //                 s.send_out[0].msg @= s.shadow_regs[addr]
+  //                 s.recv_opt.rdy @= s.send_out[0].rdy
+  //             else:
+  //                 s.send_out[0].val @= 0
+  //                 s.recv_opt.rdy @= 0
+  // 
+  //     if s.recv_from_ctrl_mem.val:
+  //         s.recv_from_ctrl_mem.rdy @= 1
+  //         s.target_ctrl_data @= s.recv_from_ctrl_mem.msg.data
+  // 
+  //         for addr in range(ctrl_addr_slots):
+  //             if s.recv_from_ctrl_mem.msg.ctrl_addr == s.CtrlAddrType(addr):
+  //                 s.target_context @= ContextIdxType(
+  //                     addr % dcu_contexts
+  //                 )
+  // 
+  //         if s.recv_from_ctrl_mem.msg.cmd == CMD_RESET_LEAF_COUNTER:
+  //             s.cmd_reset_counter @= 1
+  //         elif (
+  //             s.recv_from_ctrl_mem.msg.cmd
+  //             == CMD_UPDATE_COUNTER_SHADOW_VALUE
+  //         ):
+  //             s.cmd_update_shadow @= 1
+  //         elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_LOWER:
+  //             s.cmd_config_lower @= 1
+  //         elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_UPPER:
+  //             s.cmd_config_upper @= 1
+  //         elif s.recv_from_ctrl_mem.msg.cmd == CMD_CONFIG_LOOP_STEP:
+  //             s.cmd_config_step @= 1
   
   always_comb begin : comb_logic
     for ( int unsigned i = 1'd0; i < 3'( __const__num_inports_at_comb_logic ); i += 1'd1 )
@@ -11170,25 +11174,29 @@ module LoopCounterRTL__34612bfe96034fdc
     send_to_ctrl_mem__val = 1'd0;
     send_to_ctrl_mem__msg = { 6'd0, 35'd0, 13'd0, 127'd0, 4'd0 };
     recv_from_ctrl_mem__rdy = 1'd0;
-    current_ctrl_addr = ctrl_addr_inport;
-    loop_terminated = leaf_current_value[current_ctrl_addr].payload >= leaf_upper_bound[current_ctrl_addr].payload;
+    current_context = 3'd0;
+    for ( int unsigned addr = 1'd0; addr < 5'( __const__ctrl_addr_slots_at_comb_logic ); addr += 1'd1 )
+      if ( ctrl_addr_inport == 4'( 4'(addr) ) ) begin
+        current_context = 3'( 4'(addr) % 4'( __const__dcu_contexts_at_comb_logic ) );
+      end
+    target_context = 3'd0;
+    target_ctrl_data = { 32'd0, 1'd0, 1'd0, 1'd0 };
+    loop_terminated = leaf_current_value[current_context].payload >= leaf_upper_bound[current_context].payload;
     cmd_reset_counter = 1'd0;
     cmd_update_shadow = 1'd0;
     cmd_config_lower = 1'd0;
     cmd_config_upper = 1'd0;
     cmd_config_step = 1'd0;
-    target_ctrl_addr = 4'd0;
-    target_ctrl_data = { 32'd0, 1'd0, 1'd0, 1'd0 };
     if ( recv_opt__val ) begin
-      if ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_COUNT ) ) begin
-        __tmpvar__comb_logic_addr = current_ctrl_addr;
+      if ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_COUNT_at_comb_logic ) ) begin
+        __tmpvar__comb_logic_addr = current_context;
         recv_const__rdy = 1'd0;
         send_out__msg[1'd0].payload = leaf_current_value[__tmpvar__comb_logic_addr].payload;
         if ( loop_terminated ) begin
           send_out__msg[1'd0].predicate = 1'd0;
           if ( ~already_done[__tmpvar__comb_logic_addr] ) begin
             send_to_ctrl_mem__val = 1'd1;
-            send_to_ctrl_mem__msg = { 6'( __const__CMD_LEAF_COUNTER_COMPLETE ), { 32'd0, 1'd0, 1'd0, 1'd0 }, 13'd0, recv_opt__msg, __tmpvar__comb_logic_addr };
+            send_to_ctrl_mem__msg = { 6'( __const__CMD_LEAF_COUNTER_COMPLETE_at_comb_logic ), { 32'd0, 1'd0, 1'd0, 1'd0 }, 13'd0, recv_opt__msg, ctrl_addr_inport };
             send_out__val[1'd0] = 1'd1;
             recv_opt__rdy = send_to_ctrl_mem__rdy & send_out__rdy[1'd0];
           end
@@ -11203,8 +11211,8 @@ module LoopCounterRTL__34612bfe96034fdc
           recv_opt__rdy = send_out__rdy[1'd0];
         end
       end
-      else if ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_DELIVERY ) ) begin
-        __tmpvar__comb_logic_addr = current_ctrl_addr;
+      else if ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_DELIVERY_at_comb_logic ) ) begin
+        __tmpvar__comb_logic_addr = current_context;
         if ( shadow_valid[__tmpvar__comb_logic_addr] ) begin
           send_out__val[1'd0] = 1'd1;
           send_out__msg[1'd0] = shadow_regs[__tmpvar__comb_logic_addr];
@@ -11218,21 +11226,24 @@ module LoopCounterRTL__34612bfe96034fdc
     end
     if ( recv_from_ctrl_mem__val ) begin
       recv_from_ctrl_mem__rdy = 1'd1;
-      target_ctrl_addr = recv_from_ctrl_mem__msg.ctrl_addr;
       target_ctrl_data = recv_from_ctrl_mem__msg.data;
-      if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_RESET_LEAF_COUNTER ) ) begin
+      for ( int unsigned addr = 1'd0; addr < 5'( __const__ctrl_addr_slots_at_comb_logic ); addr += 1'd1 )
+        if ( recv_from_ctrl_mem__msg.ctrl_addr == 4'( 4'(addr) ) ) begin
+          target_context = 3'( 4'(addr) % 4'( __const__dcu_contexts_at_comb_logic ) );
+        end
+      if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_RESET_LEAF_COUNTER_at_comb_logic ) ) begin
         cmd_reset_counter = 1'd1;
       end
-      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_UPDATE_COUNTER_SHADOW_VALUE ) ) begin
+      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_UPDATE_COUNTER_SHADOW_VALUE_at_comb_logic ) ) begin
         cmd_update_shadow = 1'd1;
       end
-      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_CONFIG_LOOP_LOWER ) ) begin
+      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_CONFIG_LOOP_LOWER_at_comb_logic ) ) begin
         cmd_config_lower = 1'd1;
       end
-      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_CONFIG_LOOP_UPPER ) ) begin
+      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_CONFIG_LOOP_UPPER_at_comb_logic ) ) begin
         cmd_config_upper = 1'd1;
       end
-      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_CONFIG_LOOP_STEP ) ) begin
+      else if ( recv_from_ctrl_mem__msg.cmd == 6'( __const__CMD_CONFIG_LOOP_STEP_at_comb_logic ) ) begin
         cmd_config_step = 1'd1;
       end
     end
@@ -11300,143 +11311,136 @@ module LoopCounterRTL__34612bfe96034fdc
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/fu/single/LoopCounterRTL.py:226
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:379
   // @update_ff
   // def update_already_done():
-  //   if s.reset | s.clear:
-  //     for i in range(ctrl_mem_size):
-  //       s.already_done[i] <<= b1(0)
-  //   else:
-  //     # Sets done flag when loop completes.
-  //     if s.recv_opt.val & \
-  //        (s.recv_opt.msg.operation == OPT_LOOP_COUNT) & \
-  //        ~s.already_done[s.current_ctrl_addr] & \
-  //        s.loop_terminated & \
-  //        s.send_to_ctrl_mem.val & \
-  //        s.send_to_ctrl_mem.rdy:
-  //       addr = s.current_ctrl_addr
-  //       s.already_done[addr] <<= b1(1)
-  //     
-  //     # Resets done flag when counter is reset from LC.
-  //     if s.cmd_reset_counter:
-  //       addr = s.target_ctrl_addr
-  //       s.already_done[addr] <<= b1(0)
+  //     if s.reset | s.clear:
+  //         for i in range(dcu_contexts):
+  //             s.already_done[i] <<= 0
+  //     else:
+  //         if (
+  //             s.recv_opt.val
+  //             & (s.recv_opt.msg.operation == OPT_LOOP_COUNT)
+  //             & ~s.already_done[s.current_context]
+  //             & s.loop_terminated
+  //             & s.send_to_ctrl_mem.val
+  //             & s.send_to_ctrl_mem.rdy
+  //         ):
+  //             s.already_done[s.current_context] <<= 1
+  // 
+  //         if s.cmd_reset_counter:
+  //             s.already_done[s.target_context] <<= 0
   
   always_ff @(posedge clk) begin : update_already_done
     if ( reset | clear ) begin
-      for ( int unsigned i = 1'd0; i < 5'( __const__ctrl_mem_size_at_update_already_done ); i += 1'd1 )
-        already_done[4'(i)] <= 1'd0;
+      for ( int unsigned i = 1'd0; i < 3'( __const__dcu_contexts_at_update_already_done ); i += 1'd1 )
+        already_done[3'(i)] <= 1'd0;
     end
     else begin
-      if ( ( ( ( ( recv_opt__val & ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_COUNT ) ) ) & ( ~already_done[current_ctrl_addr] ) ) & loop_terminated ) & send_to_ctrl_mem__val ) & send_to_ctrl_mem__rdy ) begin
-        __tmpvar__update_already_done_addr = current_ctrl_addr;
-        already_done[__tmpvar__update_already_done_addr] <= 1'd1;
+      if ( ( ( ( ( recv_opt__val & ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_COUNT_at_update_already_done ) ) ) & ( ~already_done[current_context] ) ) & loop_terminated ) & send_to_ctrl_mem__val ) & send_to_ctrl_mem__rdy ) begin
+        already_done[current_context] <= 1'd1;
       end
       if ( cmd_reset_counter ) begin
-        __tmpvar__update_already_done_addr = target_ctrl_addr;
-        already_done[__tmpvar__update_already_done_addr] <= 1'd0;
+        already_done[target_context] <= 1'd0;
       end
     end
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/fu/single/LoopCounterRTL.py:176
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:330
   // @update_ff
   // def update_leaf_counters():
-  //   if s.reset | s.clear:
-  //     for i in range(ctrl_mem_size):
-  //       s.leaf_lower_bound[i] <<= s.DataType(0, 0, 0, 0)
-  //       s.leaf_upper_bound[i] <<= s.DataType(0, 0, 0, 0)
-  //       s.leaf_step[i] <<= s.DataType(0, 0, 0, 0)
-  //       s.leaf_current_value[i] <<= s.DataType(0, 0, 0, 0)
-  //   else:
-  //     # CMD Config Updates
-  //     if s.cmd_config_lower:
-  //       s.leaf_lower_bound[s.target_ctrl_addr] <<= s.target_ctrl_data
-  //       # Also initialize current value when lower bound is set (optional but safe)
-  //       s.leaf_current_value[s.target_ctrl_addr] <<= s.target_ctrl_data
-  //       
-  //     if s.cmd_config_upper:
-  //       s.leaf_upper_bound[s.target_ctrl_addr] <<= s.target_ctrl_data
-  //       
-  //     if s.cmd_config_step:
-  //       s.leaf_step[s.target_ctrl_addr] <<= s.target_ctrl_data
-  //     
-  //     # Execution phase: increments counter.
-  //     if s.recv_opt.val & (s.recv_opt.msg.operation == OPT_LOOP_COUNT):
-  //        addr = s.current_ctrl_addr
-  //        if s.send_out[0].val & s.send_out[0].rdy & ~s.loop_terminated:
-  //          s.leaf_current_value[addr] <<= s.DataType(
-  //            s.leaf_current_value[addr].payload + s.leaf_step[addr].payload,
-  //            b1(1),
-  //            b1(0),
-  //            b1(0)
-  //          )
-  //     
-  //     # Runtime reset from LC.
-  //     if s.cmd_reset_counter:
-  //       addr = s.target_ctrl_addr
-  //       s.leaf_current_value[addr] <<= s.leaf_lower_bound[addr]
+  //     if s.reset | s.clear:
+  //         for i in range(dcu_contexts):
+  //             s.leaf_lower_bound[i] <<= s.DataType(0, 0, 0, 0)
+  //             s.leaf_upper_bound[i] <<= s.DataType(0, 0, 0, 0)
+  //             s.leaf_step[i] <<= s.DataType(0, 0, 0, 0)
+  //             s.leaf_current_value[i] <<= s.DataType(0, 0, 0, 0)
+  //     else:
+  //         if s.cmd_config_lower:
+  //             s.leaf_lower_bound[s.target_context] <<= s.target_ctrl_data
+  //             s.leaf_current_value[s.target_context] <<= s.target_ctrl_data
+  // 
+  //         if s.cmd_config_upper:
+  //             s.leaf_upper_bound[s.target_context] <<= s.target_ctrl_data
+  // 
+  //         if s.cmd_config_step:
+  //             s.leaf_step[s.target_context] <<= s.target_ctrl_data
+  // 
+  //         if (
+  //             s.recv_opt.val
+  //             & (s.recv_opt.msg.operation == OPT_LOOP_COUNT)
+  //         ):
+  //             addr = s.current_context
+  //             if s.send_out[0].val & s.send_out[0].rdy & ~s.loop_terminated:
+  //                 s.leaf_current_value[addr] <<= s.DataType(
+  //                     s.leaf_current_value[addr].payload
+  //                     + s.leaf_step[addr].payload,
+  //                     1,
+  //                     0,
+  //                     0,
+  //                 )
+  // 
+  //         if s.cmd_reset_counter:
+  //             s.leaf_current_value[s.target_context] <<= (
+  //                 s.leaf_lower_bound[s.target_context]
+  //             )
   
   always_ff @(posedge clk) begin : update_leaf_counters
     if ( reset | clear ) begin
-      for ( int unsigned i = 1'd0; i < 5'( __const__ctrl_mem_size_at_update_leaf_counters ); i += 1'd1 ) begin
-        leaf_lower_bound[4'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
-        leaf_upper_bound[4'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
-        leaf_step[4'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
-        leaf_current_value[4'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
+      for ( int unsigned i = 1'd0; i < 3'( __const__dcu_contexts_at_update_leaf_counters ); i += 1'd1 ) begin
+        leaf_lower_bound[3'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
+        leaf_upper_bound[3'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
+        leaf_step[3'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
+        leaf_current_value[3'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
       end
     end
     else begin
       if ( cmd_config_lower ) begin
-        leaf_lower_bound[target_ctrl_addr] <= target_ctrl_data;
-        leaf_current_value[target_ctrl_addr] <= target_ctrl_data;
+        leaf_lower_bound[target_context] <= target_ctrl_data;
+        leaf_current_value[target_context] <= target_ctrl_data;
       end
       if ( cmd_config_upper ) begin
-        leaf_upper_bound[target_ctrl_addr] <= target_ctrl_data;
+        leaf_upper_bound[target_context] <= target_ctrl_data;
       end
       if ( cmd_config_step ) begin
-        leaf_step[target_ctrl_addr] <= target_ctrl_data;
+        leaf_step[target_context] <= target_ctrl_data;
       end
-      if ( recv_opt__val & ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_COUNT ) ) ) begin
-        __tmpvar__update_leaf_counters_addr = current_ctrl_addr;
+      if ( recv_opt__val & ( recv_opt__msg.operation == 7'( __const__OPT_LOOP_COUNT_at_update_leaf_counters ) ) ) begin
+        __tmpvar__update_leaf_counters_addr = current_context;
         if ( ( send_out__val[1'd0] & send_out__rdy[1'd0] ) & ( ~loop_terminated ) ) begin
           leaf_current_value[__tmpvar__update_leaf_counters_addr] <= { leaf_current_value[__tmpvar__update_leaf_counters_addr].payload + leaf_step[__tmpvar__update_leaf_counters_addr].payload, 1'd1, 1'd0, 1'd0 };
         end
       end
       if ( cmd_reset_counter ) begin
-        __tmpvar__update_leaf_counters_addr = target_ctrl_addr;
-        leaf_current_value[__tmpvar__update_leaf_counters_addr] <= leaf_lower_bound[__tmpvar__update_leaf_counters_addr];
+        leaf_current_value[target_context] <= leaf_lower_bound[target_context];
       end
     end
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/fu/single/LoopCounterRTL.py:213
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:368
   // @update_ff
   // def update_shadow_registers():
-  //   if s.reset | s.clear:
-  //     for i in range(ctrl_mem_size):
-  //       s.shadow_regs[i] <<= s.DataType(0, 0, 0, 0)
-  //       s.shadow_valid[i] <<= b1(0)
-  //   else:
-  //     # Runtime update from LC.
-  //     if s.cmd_update_shadow:
-  //       addr = s.target_ctrl_addr
-  //       s.shadow_regs[addr] <<= s.target_ctrl_data
-  //       s.shadow_valid[addr] <<= b1(1)
+  //     if s.reset | s.clear:
+  //         for i in range(dcu_contexts):
+  //             s.shadow_regs[i] <<= s.DataType(0, 0, 0, 0)
+  //             s.shadow_valid[i] <<= 0
+  //     else:
+  //         if s.cmd_update_shadow:
+  //             s.shadow_regs[s.target_context] <<= s.target_ctrl_data
+  //             s.shadow_valid[s.target_context] <<= 1
   
   always_ff @(posedge clk) begin : update_shadow_registers
     if ( reset | clear ) begin
-      for ( int unsigned i = 1'd0; i < 5'( __const__ctrl_mem_size_at_update_shadow_registers ); i += 1'd1 ) begin
-        shadow_regs[4'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
-        shadow_valid[4'(i)] <= 1'd0;
+      for ( int unsigned i = 1'd0; i < 3'( __const__dcu_contexts_at_update_shadow_registers ); i += 1'd1 ) begin
+        shadow_regs[3'(i)] <= { 32'd0, 1'd0, 1'd0, 1'd0 };
+        shadow_valid[3'(i)] <= 1'd0;
       end
     end
     else if ( cmd_update_shadow ) begin
-      __tmpvar__update_shadow_registers_addr = target_ctrl_addr;
-      shadow_regs[__tmpvar__update_shadow_registers_addr] <= target_ctrl_data;
-      shadow_valid[__tmpvar__update_shadow_registers_addr] <= 1'd1;
+      shadow_regs[target_context] <= target_ctrl_data;
+      shadow_valid[target_context] <= 1'd1;
     end
   end
 
@@ -16233,10 +16237,10 @@ endmodule
 
 
 // PyMTL Component FlexibleFuRTL Definition
-// Full name: FlexibleFuRTL__CtrlPktType_IntraCgraPacket_16_4x4_4_8_2_CgraPayload__0df459b16ec21deb__num_inports_4__num_outports_2__num_tiles_4__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class 'VectorCGRA.fu.single.LoopCounterRTL.LoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]__exec_lantency_{}
+// Full name: FlexibleFuRTL__CtrlPktType_IntraCgraPacket_16_4x4_4_8_2_CgraPayload__0df459b16ec21deb__num_inports_4__num_outports_2__num_tiles_4__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class '__main__.build_dut.<locals>.LimitedLoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]__exec_lantency_{}
 // At /home/lucas/Project/VectorCGRA/fu/flexible/FlexibleFuRTL.py
 
-module FlexibleFuRTL__32458a60cd6d1cfd
+module FlexibleFuRTL__60ee6e1cfb6b5b7e
 (
   input  logic [0:0] clear [0:15],
   input  logic [0:0] clk ,
@@ -16703,7 +16707,7 @@ module FlexibleFuRTL__32458a60cd6d1cfd
     .to_mem_wdata__val( fu__to_mem_wdata__val[9] )
   );
 
-  LoopCounterRTL__34612bfe96034fdc fu__10
+  LimitedLoopCounterRTL__34612bfe96034fdc fu__10
   (
     .clear( fu__clear[10] ),
     .clk( fu__clk[10] ),
@@ -19254,10 +19258,10 @@ endmodule
 
 
 // PyMTL Component TileRTL Definition
-// Full name: TileRTL__IntraCgraPktType_IntraCgraPacket_16_4x4_4_8_2_CgraPayload__0df459b16ec21deb__ctrl_mem_size_12__data_mem_size_8192__num_ctrl_12__total_steps_20__num_fu_inports_4__num_fu_outports_2__num_tile_inports_4__num_tile_outports_4__num_cgras_16__num_tiles_4__num_registers_per_reg_bank_32__Fu_FlexibleFuRTL__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class 'VectorCGRA.fu.single.LoopCounterRTL.LoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]
+// Full name: TileRTL__IntraCgraPktType_IntraCgraPacket_16_4x4_4_8_2_CgraPayload__0df459b16ec21deb__ctrl_mem_size_12__data_mem_size_8192__num_ctrl_12__total_steps_20__num_fu_inports_4__num_fu_outports_2__num_tile_inports_4__num_tile_outports_4__num_cgras_16__num_tiles_4__num_registers_per_reg_bank_32__Fu_FlexibleFuRTL__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class '__main__.build_dut.<locals>.LimitedLoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]
 // At /home/lucas/Project/VectorCGRA/tile/TileRTL.py
 
-module TileRTL__e1fd4d3c9368ccdd
+module TileRTL__31255582b9bea9b0
 (
   input  logic [3:0] cgra_id ,
   input  logic [0:0] clk ,
@@ -19440,7 +19444,7 @@ module TileRTL__e1fd4d3c9368ccdd
   logic [0:0] element__to_mem_wdata__rdy [0:15];
   logic [0:0] element__to_mem_wdata__val [0:15];
 
-  FlexibleFuRTL__32458a60cd6d1cfd element
+  FlexibleFuRTL__60ee6e1cfb6b5b7e element
   (
     .clear( element__clear ),
     .clk( element__clk ),
@@ -20360,10 +20364,10 @@ endmodule
 
 
 // PyMTL Component CgraWithLoopControllerRTL Definition
-// Full name: CgraWithLoopControllerRTL__CgraPayloadType_MultiCgraPayload_Cmd_Data_DataAddr_Ctrl_CtrlAddr__27ff16d4029952b5__multi_cgra_rows_4__multi_cgra_columns_4__width_2__height_2__ctrl_mem_size_12__data_mem_size_global_8192__data_mem_size_per_bank_128__num_banks_per_cgra_4__num_registers_per_reg_bank_32__num_ctrl_12__total_steps_20__mem_access_is_combinational_False__FunctionUnit_FlexibleFuRTL__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class 'VectorCGRA.fu.single.LoopCounterRTL.LoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]__cgra_topology_Mesh__controller2addr_map_{0: [0, 511], 1: [512, 1023], 2: [1024, 1535], 3: [1536, 2047], 4: [2048, 2559], 5: [2560, 3071], 6: [3072, 3583], 7: [3584, 4095], 8: [4096, 4607], 9: [4608, 5119], 10: [5120, 5631], 11: [5632, 6143], 12: [6144, 6655], 13: [6656, 7167], 14: [7168, 7679], 15: [7680, 8191]}__idTo2d_map_{0: (0, 0), 1: (1, 0), 2: (2, 0), 3: (3, 0), 4: (0, 1), 5: (1, 1), 6: (2, 1), 7: (3, 1), 8: (0, 2), 9: (1, 2), 10: (2, 2), 11: (3, 2), 12: (0, 3), 13: (1, 3), 14: (2, 3), 15: (3, 3)}__is_multi_cgra_True__has_ctrl_ring_True
+// Full name: CgraWithLoopControllerRTL__CgraPayloadType_MultiCgraPayload_Cmd_Data_DataAddr_Ctrl_CtrlAddr__27ff16d4029952b5__multi_cgra_rows_4__multi_cgra_columns_4__width_2__height_2__ctrl_mem_size_12__data_mem_size_global_8192__data_mem_size_per_bank_128__num_banks_per_cgra_4__num_registers_per_reg_bank_32__num_ctrl_12__total_steps_20__mem_access_is_combinational_False__FunctionUnit_FlexibleFuRTL__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class '__main__.build_dut.<locals>.LimitedLoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]__cgra_topology_Mesh__controller2addr_map_{0: [0, 511], 1: [512, 1023], 2: [1024, 1535], 3: [1536, 2047], 4: [2048, 2559], 5: [2560, 3071], 6: [3072, 3583], 7: [3584, 4095], 8: [4096, 4607], 9: [4608, 5119], 10: [5120, 5631], 11: [5632, 6143], 12: [6144, 6655], 13: [6656, 7167], 14: [7168, 7679], 15: [7680, 8191]}__idTo2d_map_{0: (0, 0), 1: (1, 0), 2: (2, 0), 3: (3, 0), 4: (0, 1), 5: (1, 1), 6: (2, 1), 7: (3, 1), 8: (0, 2), 9: (1, 2), 10: (2, 2), 11: (3, 2), 12: (0, 3), 13: (1, 3), 14: (2, 3), 15: (3, 3)}__is_multi_cgra_True__has_ctrl_ring_True
 // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py
 
-module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
+module CgraWithLoopControllerRTL__ed2925e1264769a9
 (
   input  logic [12:0] address_lower ,
   input  logic [12:0] address_upper ,
@@ -20779,7 +20783,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
   logic [0:0] tile__to_mem_wdata__rdy [0:3];
   logic [0:0] tile__to_mem_wdata__val [0:3];
 
-  TileRTL__e1fd4d3c9368ccdd tile__0
+  TileRTL__31255582b9bea9b0 tile__0
   (
     .cgra_id( tile__cgra_id[0] ),
     .clk( tile__clk[0] ),
@@ -20811,7 +20815,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
     .to_mem_wdata__val( tile__to_mem_wdata__val[0] )
   );
 
-  TileRTL__e1fd4d3c9368ccdd tile__1
+  TileRTL__31255582b9bea9b0 tile__1
   (
     .cgra_id( tile__cgra_id[1] ),
     .clk( tile__clk[1] ),
@@ -20843,7 +20847,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
     .to_mem_wdata__val( tile__to_mem_wdata__val[1] )
   );
 
-  TileRTL__e1fd4d3c9368ccdd tile__2
+  TileRTL__31255582b9bea9b0 tile__2
   (
     .cgra_id( tile__cgra_id[2] ),
     .clk( tile__clk[2] ),
@@ -20875,7 +20879,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
     .to_mem_wdata__val( tile__to_mem_wdata__val[2] )
   );
 
-  TileRTL__e1fd4d3c9368ccdd tile__3
+  TileRTL__31255582b9bea9b0 tile__3
   (
     .cgra_id( tile__cgra_id[3] ),
     .clk( tile__clk[3] ),
@@ -20922,7 +20926,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
   logic [3:0] __tmpvar__route_to_inter_cgra_noc_target_cgra;
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:423
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:666
   // @update
   // def route_cpu_and_noc_to_controllers():
   //     cpu_cmd = s.recv_from_cpu_pkt.msg.payload.cmd
@@ -21059,7 +21063,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:541
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:784
   // @update
   // def route_loop_controller_to_ctrl_ring():
   //     s.ctrl_ring.recv[loop_controller_endpoint].val @= (
@@ -21089,7 +21093,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:516
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:759
   // @update
   // def route_ring_events_to_regular_or_loop_controller():
   //     ring_pkt = s.ctrl_ring.send[controller_endpoint].msg
@@ -21132,7 +21136,7 @@ module CgraWithLoopControllerRTL__d9de6a3a313c7d0d
   end
 
   // PyMTL Update Block Source
-  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:563
+  // At /home/lucas/Project/VectorCGRA/AMOEBA-Test/generate_amoeba_4x4_rtl.py:806
   // @update
   // def route_to_inter_cgra_noc():
   //     s.controller.send_to_inter_cgra_noc.rdy @= 0
@@ -23683,7 +23687,7 @@ endmodule
 
 
 // PyMTL Component MeshMultiCgraRTL Definition
-// Full name: MeshMultiCgraRTL__CgraPayloadType_MultiCgraPayload_Cmd_Data_DataAddr_Ctrl_CtrlAddr__27ff16d4029952b5__cgra_rows_4__cgra_columns_4__tile_rows_2__tile_columns_2__ctrl_mem_size_12__data_mem_size_global_8192__data_mem_size_per_bank_128__num_banks_per_cgra_4__num_registers_per_reg_bank_32__num_ctrl_12__total_steps_20__mem_access_is_combinational_False__FunctionUnit_FlexibleFuRTL__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class 'VectorCGRA.fu.single.LoopCounterRTL.LoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]__per_cgra_topology_Mesh__controller2addr_map_{0: [0, 511], 1: [512, 1023], 2: [1024, 1535], 3: [1536, 2047], 4: [2048, 2559], 5: [2560, 3071], 6: [3072, 3583], 7: [3584, 4095], 8: [4096, 4607], 9: [4608, 5119], 10: [5120, 5631], 11: [5632, 6143], 12: [6144, 6655], 13: [6656, 7167], 14: [7168, 7679], 15: [7680, 8191]}__support_task_switching_False
+// Full name: MeshMultiCgraRTL__CgraPayloadType_MultiCgraPayload_Cmd_Data_DataAddr_Ctrl_CtrlAddr__27ff16d4029952b5__cgra_rows_4__cgra_columns_4__tile_rows_2__tile_columns_2__ctrl_mem_size_12__data_mem_size_global_8192__data_mem_size_per_bank_128__num_banks_per_cgra_4__num_registers_per_reg_bank_32__num_ctrl_12__total_steps_20__mem_access_is_combinational_False__FunctionUnit_FlexibleFuRTL__FuList_[<class 'VectorCGRA.fu.single.AdderRTL.AdderRTL'>, <class 'VectorCGRA.fu.single.MulRTL.MulRTL'>, <class 'VectorCGRA.fu.single.LogicRTL.LogicRTL'>, <class 'VectorCGRA.fu.single.ShifterRTL.ShifterRTL'>, <class 'VectorCGRA.fu.single.PhiRTL.PhiRTL'>, <class 'VectorCGRA.fu.single.CompRTL.CompRTL'>, <class 'VectorCGRA.fu.single.GrantRTL.GrantRTL'>, <class 'VectorCGRA.fu.single.MemUnitRTL.MemUnitRTL'>, <class 'VectorCGRA.fu.single.SelRTL.SelRTL'>, <class 'VectorCGRA.fu.single.RetRTL.RetRTL'>, <class '__main__.build_dut.<locals>.LimitedLoopCounterRTL'>, <class 'VectorCGRA.fu.single.ExtractPredicateRTL.ExtractPredicateRTL'>, <class 'VectorCGRA.fu.double.SeqMulAdderRTL.SeqMulAdderRTL'>, <class 'VectorCGRA.fu.vector.VectorMulComboRTL.VectorMulComboRTL'>, <class 'VectorCGRA.fu.vector.VectorAdderComboRTL.VectorAdderComboRTL'>, <class 'VectorCGRA.fu.single.NahRTL.NahRTL'>]__per_cgra_topology_Mesh__controller2addr_map_{0: [0, 511], 1: [512, 1023], 2: [1024, 1535], 3: [1536, 2047], 4: [2048, 2559], 5: [2560, 3071], 6: [3072, 3583], 7: [3584, 4095], 8: [4096, 4607], 9: [4608, 5119], 10: [5120, 5631], 11: [5632, 6143], 12: [6144, 6655], 13: [6656, 7167], 14: [7168, 7679], 15: [7680, 8191]}__support_task_switching_False
 // At /home/lucas/Project/VectorCGRA/multi_cgra/MeshMultiCgraRTL.py
 
 module AmoebaMultiCgra4x4Cgra2x2RTL
@@ -23743,7 +23747,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
   logic [0:0] cgra__send_to_inter_cgra_noc__rdy [0:15];
   logic [0:0] cgra__send_to_inter_cgra_noc__val [0:15];
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__0
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__0
   (
     .address_lower( cgra__address_lower[0] ),
     .address_upper( cgra__address_upper[0] ),
@@ -23788,7 +23792,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[0] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__1
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__1
   (
     .address_lower( cgra__address_lower[1] ),
     .address_upper( cgra__address_upper[1] ),
@@ -23833,7 +23837,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[1] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__2
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__2
   (
     .address_lower( cgra__address_lower[2] ),
     .address_upper( cgra__address_upper[2] ),
@@ -23878,7 +23882,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[2] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__3
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__3
   (
     .address_lower( cgra__address_lower[3] ),
     .address_upper( cgra__address_upper[3] ),
@@ -23923,7 +23927,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[3] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__4
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__4
   (
     .address_lower( cgra__address_lower[4] ),
     .address_upper( cgra__address_upper[4] ),
@@ -23968,7 +23972,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[4] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__5
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__5
   (
     .address_lower( cgra__address_lower[5] ),
     .address_upper( cgra__address_upper[5] ),
@@ -24013,7 +24017,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[5] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__6
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__6
   (
     .address_lower( cgra__address_lower[6] ),
     .address_upper( cgra__address_upper[6] ),
@@ -24058,7 +24062,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[6] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__7
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__7
   (
     .address_lower( cgra__address_lower[7] ),
     .address_upper( cgra__address_upper[7] ),
@@ -24103,7 +24107,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[7] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__8
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__8
   (
     .address_lower( cgra__address_lower[8] ),
     .address_upper( cgra__address_upper[8] ),
@@ -24148,7 +24152,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[8] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__9
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__9
   (
     .address_lower( cgra__address_lower[9] ),
     .address_upper( cgra__address_upper[9] ),
@@ -24193,7 +24197,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[9] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__10
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__10
   (
     .address_lower( cgra__address_lower[10] ),
     .address_upper( cgra__address_upper[10] ),
@@ -24238,7 +24242,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[10] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__11
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__11
   (
     .address_lower( cgra__address_lower[11] ),
     .address_upper( cgra__address_upper[11] ),
@@ -24283,7 +24287,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[11] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__12
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__12
   (
     .address_lower( cgra__address_lower[12] ),
     .address_upper( cgra__address_upper[12] ),
@@ -24328,7 +24332,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[12] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__13
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__13
   (
     .address_lower( cgra__address_lower[13] ),
     .address_upper( cgra__address_upper[13] ),
@@ -24373,7 +24377,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[13] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__14
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__14
   (
     .address_lower( cgra__address_lower[14] ),
     .address_upper( cgra__address_upper[14] ),
@@ -24418,7 +24422,7 @@ module AmoebaMultiCgra4x4Cgra2x2RTL
     .send_to_inter_cgra_noc__val( cgra__send_to_inter_cgra_noc__val[14] )
   );
 
-  CgraWithLoopControllerRTL__d9de6a3a313c7d0d cgra__15
+  CgraWithLoopControllerRTL__ed2925e1264769a9 cgra__15
   (
     .address_lower( cgra__address_lower[15] ),
     .address_upper( cgra__address_upper[15] ),
