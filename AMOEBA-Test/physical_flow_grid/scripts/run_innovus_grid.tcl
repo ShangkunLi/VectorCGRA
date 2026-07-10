@@ -69,6 +69,11 @@ set init_top_cell $TOP_MODULE
 set init_lef_file $lefs
 
 init_design -setup {WC_VIEW} -hold {BC_VIEW}
+# The loaded LEF/lib/QRC stack is TSMC 22 nm. Set the Innovus process mode
+# explicitly so extraction and optimization do not use the default 90 nm
+# thresholds. Keep this outside catch: a rejected process setting must stop the
+# flow instead of silently producing results under the wrong process mode.
+setDesignMode -process 22
 set_power_analysis_mode -leakage_power_view WC_VIEW -dynamic_power_view WC_VIEW
 
 set_interactive_constraint_modes {CON}
