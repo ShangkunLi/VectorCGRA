@@ -3,16 +3,16 @@
 Report : qor
 Design : AmoebaMultiCgra4x4Cgra2x2RTL
 Version: V-2023.12
-Date   : Mon Jul  6 10:17:52 2026
+Date   : Fri Jul 10 02:04:24 2026
 ****************************************
 
 
   Timing Path Group 'sys_clk'
   -----------------------------------
-  Levels of Logic:              32.00
-  Critical Path Length:          2.24
-  Critical Path Slack:        1426.33
-  Critical Path Clk Period:   1428.57
+  Levels of Logic:              39.00
+  Critical Path Length:          2.04
+  Critical Path Slack:        1997.96
+  Critical Path Clk Period:   2000.00
   Total Negative Slack:          0.00
   No. of Violating Paths:        0.00
   Worst Hold Violation:          0.00
@@ -23,37 +23,37 @@ Date   : Mon Jul  6 10:17:52 2026
 
   Cell Count
   -----------------------------------
-  Hierarchical Cell Count:      19101
-  Hierarchical Port Count:    6597598
-  Leaf Cell Count:            5480760
-  Buf/Inv Cell Count:          364923
-  Buf Cell Count:               19619
-  Inv Cell Count:              345304
+  Hierarchical Cell Count:      18845
+  Hierarchical Port Count:    6522138
+  Leaf Cell Count:            4396601
+  Buf/Inv Cell Count:          287073
+  Buf Cell Count:                8503
+  Inv Cell Count:              278570
   CT Buf/Inv Cell Count:            0
-  Combinational Cell Count:   4151163
-  Sequential Cell Count:      1329597
+  Combinational Cell Count:   3366274
+  Sequential Cell Count:      1030327
   Macro Count:                      0
   -----------------------------------
 
 
   Area
   -----------------------------------
-  Combinational Area:  2711531.933386
+  Combinational Area:  2211381.871650
   Noncombinational Area:
-                       2512938.814980
-  Buf/Inv Area:          94432.591226
-  Total Buffer Area:          7415.98
-  Total Inverter Area:       87016.61
+                       1947318.519261
+  Buf/Inv Area:          73413.901054
+  Total Buffer Area:          3214.13
+  Total Inverter Area:       70199.77
   Macro/Black Box Area:      0.000000
   Net Area:                  0.000000
   -----------------------------------
-  Cell Area:           5224470.748366
-  Design Area:         5224470.748366
+  Cell Area:           4158700.390911
+  Design Area:         4158700.390911
 
 
   Design Rules
   -----------------------------------
-  Total Number of Nets:       7077361
+  Total Number of Nets:       5984822
   Nets With Violations:             0
   Max Trans Violations:             0
   Max Cap Violations:               0
@@ -64,12 +64,12 @@ Date   : Mon Jul  6 10:17:52 2026
 
   Compile CPU Statistics
   -----------------------------------------
-  Resource Sharing:                 1524.12
-  Logic Optimization:              34818.46
-  Mapping Optimization:            138632.12
+  Resource Sharing:                  714.38
+  Logic Optimization:              25874.84
+  Mapping Optimization:            113359.12
   -----------------------------------------
-  Overall Compile Time:            245315.80
-  Overall Compile Wall Clock Time: 42968.87
+  Overall Compile Time:            199941.19
+  Overall Compile Wall Clock Time: 39401.54
 
   --------------------------------------------------------------------
 
