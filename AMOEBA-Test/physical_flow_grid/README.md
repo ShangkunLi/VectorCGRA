@@ -55,6 +55,18 @@ figure, run:
 ./scripts/export_layout_image.sh
 ```
 
+This opens the restored design in the Innovus GUI instead of exporting from
+the small startup canvas. Maximize the window, enlarge the main layout canvas,
+and run the following command in the Innovus Console:
+
+```tcl
+amoeba_export_multicore_layout
+```
+
+The GIF resolution follows the visible layout canvas. Close Innovus after the
+export finishes; the shell script will then convert the PDF/PS (or GIF
+fallback) into the high-resolution PNG.
+
 ## Tuning
 
 The main knobs live in `scripts/flow_config.tcl`:

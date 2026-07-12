@@ -30,5 +30,20 @@ proc amoeba_restore_saved_grid_design {} {
 }
 
 amoeba_restore_saved_grid_design
+
+# Define the display/export procedures without dumping the startup-size canvas.
+# Returning from this file lets the Innovus GUI finish opening and keeps it
+# available for the user to maximize before exporting.
+set ::amoeba_layout_auto_export 0
 source scripts/export_multicore_layout.tcl
-exit
+amoeba_layout_prepare_multicore_view
+
+puts ""
+puts "Interactive layout export is ready."
+puts "1. Maximize the Innovus window (and enlarge the main layout canvas)."
+puts "2. Run this command in the Innovus Console:"
+puts ""
+puts "     amoeba_export_multicore_layout"
+puts ""
+puts "3. Close Innovus after the GIF/PDF/PS files are written."
+puts "The shell wrapper will then create the high-resolution PNG."

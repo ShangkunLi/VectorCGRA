@@ -17,6 +17,8 @@ if [ -z "${INNOVUS_BIN}" ]; then
   fi
 fi
 
+echo "Opening the routed design in Innovus GUI for interactive high-resolution export."
+echo "Maximize the layout canvas, then run: amoeba_export_multicore_layout"
 "${INNOVUS_BIN}" -64 -overwrite -log log/export_layout_image.log -files scripts/export_layout_image.tcl
 
 if [ "${POSTPROCESS_LAYOUT:-1}" = "1" ]; then

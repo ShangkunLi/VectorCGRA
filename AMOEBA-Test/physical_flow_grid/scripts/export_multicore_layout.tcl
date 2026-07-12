@@ -224,16 +224,8 @@ proc amoeba_layout_try_hardcopy {base_name} {
     return $wrote
 }
 
-proc amoeba_export_multicore_layout {} {
+proc amoeba_layout_prepare_multicore_view {} {
     amoeba_layout_require_design
-
-    set output_dir [amoeba_layout_get_or_default ::amoeba_layout_output_dir "reports/layout"]
-    set basename [amoeba_layout_get_or_default ::amoeba_layout_output_basename "amoeba_grid_post_route_layout"]
-    set gif_file [file join $output_dir "${basename}.gif"]
-    set hardcopy_base [file join $output_dir $basename]
-    set export_hardcopy [amoeba_layout_get_or_default ::amoeba_layout_export_hardcopy 1]
-
-    file mkdir $output_dir
 
     amoeba_layout_clean_display
     amoeba_layout_prepare_layers
@@ -245,6 +237,20 @@ proc amoeba_export_multicore_layout {} {
 
     puts ""
     puts "Display is prepared for paper export."
+}
+
+proc amoeba_export_multicore_layout {} {
+    amoeba_layout_require_design
+
+    set output_dir [amoeba_layout_get_or_default ::amoeba_layout_output_dir "reports/layout"]
+    set basename [amoeba_layout_get_or_default ::amoeba_layout_output_basename "amoeba_grid_post_route_layout"]
+    set gif_file [file join $output_dir "${basename}.gif"]
+    set hardcopy_base [file join $output_dir $basename]
+    set export_hardcopy [amoeba_layout_get_or_default ::amoeba_layout_export_hardcopy 1]
+
+    file mkdir $output_dir
+
+    amoeba_layout_prepare_multicore_view
     amoeba_layout_try_dump_gif $gif_file
     if {$export_hardcopy} {
         amoeba_layout_try_hardcopy $hardcopy_base
@@ -279,4 +285,6 @@ set ::amoeba_layout_export_hardcopy [amoeba_layout_get_or_default \
     ::amoeba_layout_export_hardcopy \
     [amoeba_layout_global_or_default LAYOUT_EXPORT_HARDCOPY 1]]
 
-amoeba_export_multicore_layout
+if {![info exists ::amoeba_layout_auto_export] || $::amoeba_layout_auto_export} {
+    amoeba_export_multicore_layout
+}
