@@ -67,6 +67,10 @@ The GIF resolution follows the visible layout canvas. Close Innovus after the
 export finishes; the shell script will then convert the PDF/PS (or GIF
 fallback) into the high-resolution PNG.
 
+The launcher must be run from a VNC/X11 desktop terminal with `DISPLAY` set.
+It resolves the real Innovus executable and the Tcl script explicitly runs the
+classic Innovus `win` command (with `gui_show` as a compatibility fallback).
+
 ## Tuning
 
 The main knobs live in `scripts/flow_config.tcl`:

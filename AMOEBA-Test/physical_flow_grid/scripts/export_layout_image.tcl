@@ -2,6 +2,31 @@
 
 source scripts/flow_config.tcl
 
+proc amoeba_open_innovus_gui {} {
+    if {![info exists ::env(DISPLAY)] || [string trim $::env(DISPLAY)] eq ""} {
+        error "DISPLAY is not set. Run this script from a VNC/X11 desktop session."
+    }
+
+    set errors [list]
+
+    # The classic Innovus UI uses `win` to create or raise the main window.
+    # Some newer Cadence Common UI releases expose `gui_show` instead.
+    foreach gui_command {win gui_show} {
+        if {[llength [info commands $gui_command]] == 0} {
+            continue
+        }
+        if {![catch {uplevel #0 [list $gui_command]} gui_error]} {
+            catch {update idletasks}
+            catch {update}
+            puts "Opened Innovus GUI with '$gui_command' on DISPLAY=$::env(DISPLAY)."
+            return
+        }
+        lappend errors "$gui_command: $gui_error"
+    }
+
+    error "Could not open the Innovus GUI. Ensure Innovus was started without -nowin/-no_gui. Attempts: $errors"
+}
+
 proc amoeba_restore_saved_grid_design {} {
     global DESIGN TOP_MODULE
 
@@ -29,6 +54,7 @@ proc amoeba_restore_saved_grid_design {} {
     error "Could not find a saved Innovus database. Tried: $candidates"
 }
 
+amoeba_open_innovus_gui
 amoeba_restore_saved_grid_design
 
 # Define the display/export procedures without dumping the startup-size canvas.
