@@ -35,6 +35,10 @@ proc amoeba_layout_try_set_layer {layer_name visible {color ""} {width ""}} {
     }
 }
 
+proc amoeba_layout_try_set_preference {pref_name pref_value} {
+    catch {setPreference $pref_name $pref_value}
+}
+
 proc amoeba_layout_clean_display {} {
     catch {clearAllRulers}
     catch {delete_gui_object -text}
@@ -44,21 +48,27 @@ proc amoeba_layout_clean_display {} {
     catch {setLayerPreference violation -isVisible 0}
     catch {setLayerPreference ruler -isVisible 0}
 
-    catch {setPreference ShowInstanceText 0}
-    catch {setPreference ShowNetText 0}
-    catch {setPreference ShowIoPinText 0}
-    catch {setPreference ShowGroupText 0}
-    catch {setPreference ShowModuleText 0}
-    catch {setPreference ShowInstancePinText 0}
-    catch {setPreference ShowUtilizationText 0}
-    catch {setPreference DisplayPinName 0}
-    catch {setPreference ShowFloorplanObjectName 0}
-    catch {setPreference LayoutBackground black}
+    foreach pref {
+        ShowInstanceText
+        ShowNetText
+        ShowIoPinText
+        ShowGroupText
+        ShowModuleText
+        ShowInstancePinText
+        ShowUtilizationText
+        DisplayPinName
+        ShowFloorplanObjectName
+    } {
+        amoeba_layout_try_set_preference $pref 0
+    }
 
     catch {set_power_rail_display -plot none}
 }
 
 proc amoeba_layout_prepare_layers {} {
+    # Keep the same native Innovus cell/routing palette as
+    # physical_flow/scripts/export_paper_layout.tcl. Only the grid overlay
+    # receives an explicit color below.
     foreach layer {StandardRow row Row violation ruler} {
         amoeba_layout_try_set_layer $layer 0
     }
@@ -72,6 +82,16 @@ proc amoeba_layout_prepare_layers {} {
     foreach class {StdCell Block Cover Physical IO AreaIO BlackBox} {
         amoeba_layout_try_set_layer $class 1
     }
+}
+
+proc amoeba_layout_prepare_route_view {} {
+    # Match the routed-layout display used by export_paper_layout.tcl.
+    amoeba_layout_try_set_preference ShowRoute 1
+    amoeba_layout_try_set_preference ShowFPObjInPlace 0
+    amoeba_layout_try_set_preference ShowAllFence 0
+    amoeba_layout_try_set_preference DisplayRelFPlan 0
+    amoeba_layout_try_set_preference AutoDetailDisplay 0
+    amoeba_layout_try_set_preference DetailDisplayFactor 1000000
 }
 
 proc amoeba_layout_resolve_grid_report {} {
@@ -139,7 +159,7 @@ proc amoeba_layout_add_label {core_id llx lly urx ury layer} {
 }
 
 proc amoeba_layout_draw_core_grid {} {
-    set line_width [amoeba_layout_get_or_default ::amoeba_layout_line_width 7]
+    set line_width [amoeba_layout_get_or_default ::amoeba_layout_line_width 1]
     if {$line_width < 1} {
         set line_width 1
     }
@@ -148,10 +168,12 @@ proc amoeba_layout_draw_core_grid {} {
         set line_width 7
     }
 
+    set grid_color [amoeba_layout_get_or_default ::amoeba_layout_grid_color white]
     set grid_layer "amoeba_paper_grid"
     set text_layer "amoeba_paper_text"
-    amoeba_layout_try_set_layer $grid_layer 1 white $line_width
-    amoeba_layout_try_set_layer $text_layer 1 white $line_width
+    amoeba_layout_try_set_layer customLayers 1 $grid_color $line_width
+    amoeba_layout_try_set_layer $grid_layer 1 $grid_color $line_width
+    amoeba_layout_try_set_layer $text_layer 1 $grid_color $line_width
 
     set rpt_file [amoeba_layout_resolve_grid_report]
     set boxes [amoeba_layout_load_grid_boxes $rpt_file]
@@ -163,6 +185,8 @@ proc amoeba_layout_draw_core_grid {} {
         puts "Warning: only found [dict size $boxes] grid boxes in $rpt_file; expected $expected."
     }
 
+    # Draw one thin outline around every fence. Adjacent core edges remain
+    # separated by the routing channel, so all 16 cores read as distinct boxes.
     for {set core_id 0} {$core_id < $expected} {incr core_id} {
         if {![dict exists $boxes $core_id]} {
             continue
@@ -213,6 +237,7 @@ proc amoeba_export_multicore_layout {} {
 
     amoeba_layout_clean_display
     amoeba_layout_prepare_layers
+    amoeba_layout_prepare_route_view
     amoeba_layout_draw_core_grid
 
     catch {fit}
@@ -243,7 +268,10 @@ set ::amoeba_layout_grid_cols [amoeba_layout_get_or_default \
     [amoeba_layout_global_or_default CORE_GRID_COLS 4]]
 set ::amoeba_layout_line_width [amoeba_layout_get_or_default \
     ::amoeba_layout_line_width \
-    [amoeba_layout_global_or_default LAYOUT_GRID_LINE_WIDTH 7]]
+    [amoeba_layout_global_or_default LAYOUT_GRID_LINE_WIDTH 1]]
+set ::amoeba_layout_grid_color [amoeba_layout_get_or_default \
+    ::amoeba_layout_grid_color \
+    [amoeba_layout_global_or_default LAYOUT_GRID_COLOR white]]
 set ::amoeba_layout_label_enable [amoeba_layout_get_or_default \
     ::amoeba_layout_label_enable \
     [amoeba_layout_global_or_default LAYOUT_LABEL_ENABLE 0]]

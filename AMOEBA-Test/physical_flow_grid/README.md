@@ -63,7 +63,13 @@ The main knobs live in `scripts/flow_config.tcl`:
 set CORE_GRID_MODE "fence"
 set CORE_GRID_CHANNEL 6.0
 set CORE_GRID_BOUNDARY_PLACE_BLKG_WIDTH 4.0
+set LAYOUT_GRID_COLOR white
+set LAYOUT_GRID_LINE_WIDTH 1
 ```
+
+The exported view keeps the native Innovus routed-layout colors used by
+`../physical_flow/scripts/export_paper_layout.tcl`. Each core gets its own thin
+outline, so the routing channel remains visible between neighboring boxes.
 
 For a cleaner but harder-to-route figure, increase `CORE_GRID_CHANNEL` or the
 boundary blockage width. For faster convergence, lower those values or change
