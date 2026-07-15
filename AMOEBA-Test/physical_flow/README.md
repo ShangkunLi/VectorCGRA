@@ -83,6 +83,26 @@ Run synthesis and physical implementation:
 ./scripts/run_innovus.sh
 ```
 
+Recompute synthesis power with the same vectorless 20% activity used by the
+Innovus reports, without rerunning `compile_ultra`:
+
+```bash
+./scripts/run_dc_power_20pct.sh
+```
+
+This requires the mapped `results/amoeba.ddc` produced by `run_dc.sh`. It sets
+all non-clock primary inputs and all sequential output pins to 0.2 transitions
+per `sys_clk` cycle with static probability 0.5. This matches the Innovus
+report fields `Primary Input Activity: 0.200000` and
+`Sequential Element Activity: 0.200000`. The generated reports are:
+
+```text
+reports/dc_power_20pct_summary.rpt
+reports/dc_power_20pct_hierarchy.rpt
+reports/dc_power_20pct_metadata.txt
+log/dc_power_20pct.log
+```
+
 Useful outputs:
 
 ```text
