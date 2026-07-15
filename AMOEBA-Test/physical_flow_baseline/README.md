@@ -99,6 +99,7 @@ Innovus report fields `Primary Input Activity: 0.200000` and
 ```text
 reports/dc_power_20pct_summary.rpt
 reports/dc_power_20pct_hierarchy.rpt
+reports/dc_switching_activity_20pct.rpt
 reports/dc_power_20pct_metadata.txt
 log/dc_power_20pct.log
 ```

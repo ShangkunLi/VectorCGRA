@@ -73,6 +73,11 @@ set_switching_activity \
     -base_clock $base_clock_name \
     $register_outputs
 
+# DC does not automatically propagate user annotations through all
+# combinational logic before report_power.  Innovus performs this propagation
+# explicitly during its vectorless power analysis, so do the same here.
+propagate_switching_activity
+
 set metadata_file "${REPORT_DIR}/dc_power_20pct_metadata.txt"
 set metadata [open $metadata_file w]
 puts $metadata "design=$TOP_MODULE"
@@ -83,10 +88,12 @@ puts $metadata "toggle_rate_per_cycle=$ACTIVITY"
 puts $metadata "static_probability=$STATIC_PROBABILITY"
 puts $metadata "annotated_primary_inputs=[sizeof_collection $activity_inputs]"
 puts $metadata "annotated_register_outputs=[sizeof_collection $register_outputs]"
+puts $metadata "switching_activity_propagated=1"
 puts $metadata "clock_input_excluded=1"
 puts $metadata "reset_uses_primary_input_default=1"
 close $metadata
 
+report_switching_activity > ${REPORT_DIR}/dc_switching_activity_20pct.rpt
 report_power > ${REPORT_DIR}/dc_power_20pct_summary.rpt
 report_power -hierarchy > ${REPORT_DIR}/dc_power_20pct_hierarchy.rpt
 
