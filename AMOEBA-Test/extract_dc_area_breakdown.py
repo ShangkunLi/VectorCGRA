@@ -123,6 +123,12 @@ def is_tile_fu(row: AreaRow) -> bool:
     )
 
 
+def is_dcu_design(design: str) -> bool:
+    return design.startswith(
+        ("LimitedLoopCounterRTL", "LoopCounterRTL", "Dcu", "DCU")
+    )
+
+
 def sum_area(rows: Iterable[AreaRow], predicate) -> float:
     return sum(row.area for row in rows if predicate(row))
 
@@ -158,12 +164,7 @@ def build_breakdown(rows: list[AreaRow], spm_mode: str) -> list[tuple[str, float
     element_area = sum_area(rows, lambda row: is_tile_child(row.path, "element"))
     dcu_area = sum_area(
         rows,
-        lambda row: is_tile_fu(row)
-        and (
-            row.design.startswith("LoopCounterRTL")
-            or row.design.startswith("Dcu")
-            or row.design.startswith("DCU")
-        ),
+        lambda row: is_tile_fu(row) and is_dcu_design(row.design),
     )
     other_fu_area = max(0.0, element_area - dcu_area)
     register_area = sum_area(rows, lambda row: is_tile_child(row.path, "register_cluster"))
@@ -243,7 +244,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--spm-mode",
         choices=("none", "stub", "controller"),
-        default="none",
+        default="controller",
         help=(
             "How to fill SPMs (x16): 'none' reports 0 because the current DC "
             "netlist has no SRAM macro area; 'stub' reports only "

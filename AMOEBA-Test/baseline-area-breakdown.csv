@@ -8,7 +8,7 @@ Tiles (x64),2193115.4088
   Other Tile Logic,124305.4324
 Core Controllers (x16),108257.1824
 Loop Controllers (x16),0.0000
-SPMs (x16),0.0000
+SPMs (x16),63435.8340
 Inter-Core NoC,168881.4520
-Other,846288.6887
+Other,782852.8547
 Total,3316542.7319

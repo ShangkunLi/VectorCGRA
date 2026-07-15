@@ -1,0 +1,14 @@
+component,area_um2
+Tiles (x64),2452934.5844
+  DCUs,187932.1500
+  Other FUs,528468.3116
+  Register Files,866058.9712
+  Crossbars,190927.4220
+  Configuration Memories,531710.2916
+  Other Tile Logic,147837.4380
+Core Controllers (x16),108304.0544
+Loop Controllers (x16),84764.8620
+SPMs (x16),63449.4420
+Inter-Core NoC,169226.4400
+Other,892143.8707
+Total,3770823.2535
