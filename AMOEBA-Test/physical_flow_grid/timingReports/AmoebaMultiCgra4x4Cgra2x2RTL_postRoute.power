@@ -1,0 +1,102 @@
+*----------------------------------------------------------------------------------------
+*	Innovus 20.10-p004_1 (64bit) 05/07/2020 20:02 (Linux 2.6.32-431.11.2.el6.x86_64)
+*	
+*
+* 	Date & Time:	2026-Jul-11 23:52:23 (2026-Jul-11 15:52:23 GMT)
+*
+*----------------------------------------------------------------------------------------
+*
+*	Design: AmoebaMultiCgra4x4Cgra2x2RTL
+*
+*	Liberty Libraries used: 
+*	        /dfs/app/tsmc_icdc/tsmc022/tsmc022_ULL/SC/tcbn22ullbwp30p140lvt/Rev110b/Front_End/timing_power_noise/NLDM/tcbn22ullbwp30p140lvt_110b/tcbn22ullbwp30p140lvtffg0p88v0c.lib
+*
+*	Power Domain used: 
+*              Rail:        VDD      Voltage:       0.88 
+*
+*       Dynamic View: WC_VIEW
+*
+*       Leakage View: WC_VIEW
+*
+*       User-Defined Activity : N.A.
+*
+*       Activity File: N.A.
+*
+*       Hierarchical Global Activity: N.A.
+*
+*       Global Activity: N.A.
+*
+*       Sequential Element Activity: 0.200000
+*
+*       Primary Input Activity: 0.200000
+*
+*       Default icg ratio: N.A.
+*
+*       Global Comb ClockGate Ratio: N.A.
+*
+*	Power Units = 1mW
+*
+*	Time Units = 1e-12 secs 
+*
+*       report_power -outfile ./timingReports/AmoebaMultiCgra4x4Cgra2x2RTL_postRoute.power
+*
+-----------------------------------------------------------------------------------------
+
+
+Total Power 
+-----------------------------------------------------------------------------------------
+Total Internal Power:     1899.27254040 	   65.0835%
+Total Switching Power:     779.25153953 	   26.7031%
+Total Leakage Power:       239.68354288 	    8.2134%
+Total Power:              2918.20761832 
+-----------------------------------------------------------------------------------------
+
+
+Group                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+Sequential                          1495       52.54       126.8        1674       57.37 
+Macro                                  0           0           0           0           0 
+IO                                     0           0   3.864e-08   3.864e-08   1.324e-09 
+Combinational                        316       449.5       107.9       873.4       29.93 
+Clock (Combinational)              88.46       277.2       5.076       370.7        12.7 
+Clock (Sequential)                     0           0           0           0           0 
+-----------------------------------------------------------------------------------------
+Total                               1899       779.3       239.7        2918         100 
+-----------------------------------------------------------------------------------------
+
+
+Rail                  Voltage   Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+VDD                      0.88       1899       779.3       239.7        2918         100 
+
+
+Clock                           Internal   Switching     Leakage       Total  Percentage 
+                                Power      Power         Power         Power  (%)        
+-----------------------------------------------------------------------------------------
+sys_clk                            88.46       277.2       5.076       370.7        12.7 
+-----------------------------------------------------------------------------------------
+Total (excluding duplicates)       88.46       277.2       5.076       370.7        12.7 
+-----------------------------------------------------------------------------------------
+Clock: sys_clk
+Clock Period: 0.002000 usec 
+Clock Toggle Rate:  1000.0000 Mhz 
+Clock Static Probability:  0.5000
+
+
+
+-----------------------------------------------------------------------------------------
+*	Power Distribution Summary: 
+*                Highest Average Power:       CTS_ccl_a_buf_30590 (CKBD16BWP30P140LVT):          0.04022 
+*                Highest Leakage Power: cgra__14/tile__1/element/U183 (OR3D16BWP30P140LVT):        0.0006702 
+*          Total Cap:      1.33499e-08 F
+*          Total instances in design: 4029412
+*          Total instances in design with no power:     0
+*          Total instances in design with no activity:     0
+*          Total Fillers and Decap:     0
+-----------------------------------------------------------------------------------------
+
+Total leakage power = 239.684 mW
+Cell usage statistics:  
+Library tcbn22ullbwp30p140lvtffg0p88v0c , 4029412 cells ( 100.000000%) , 239.684 mW ( 100.000000%  ) 
